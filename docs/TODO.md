@@ -294,31 +294,65 @@
     - [ ] 키워드 + 지역 필터
     - [ ] 키워드 + 타입 필터
     - [ ] 모든 필터 동시 적용
-- [ ] 네이버 지도 연동 (MVP 2.2)
-  - [ ] `components/naver-map.tsx` 생성
-    - [ ] Naver Maps API v3 초기화
-    - [ ] 지도 컨테이너 설정
-    - [ ] 초기 중심 좌표 설정
-    - [ ] 줌 레벨 설정
-  - [ ] 마커 표시
-    - [ ] 관광지 목록을 마커로 표시
-    - [ ] 좌표 변환 (KATEC → WGS84: mapx/mapy / 10000000)
-    - [ ] 마커 클릭 시 인포윈도우
-      - [ ] 관광지명
-      - [ ] 간단한 설명
-      - [ ] "상세보기" 버튼
+- [x] 네이버 지도 연동 (MVP 2.2)
+  - [x] `components/naver-map.tsx` 생성
+    - [x] Naver Maps API v3 초기화
+    - [x] 지도 컨테이너 설정
+    - [x] 초기 중심 좌표 설정
+    - [x] 줌 레벨 설정
+  - [x] 마커 표시
+    - [x] 관광지 목록을 마커로 표시
+    - [x] 좌표 변환 (KATEC → WGS84: mapx/mapy / 10000000)
+    - [x] 마커 클릭 시 인포윈도우
+      - [x] 관광지명
+      - [x] 간단한 설명 (주소 표시)
+      - [x] "상세보기" 버튼
     - [ ] 관광 타입별 마커 색상 구분 (선택 사항)
-  - [ ] 지도-리스트 연동
-    - [ ] 리스트 항목 클릭 → 지도 이동 및 마커 강조
+  - [x] 지도-리스트 연동
+    - [x] 리스트 항목 클릭 → 지도 이동 및 마커 강조
     - [ ] 리스트 항목 호버 → 마커 강조 (선택 사항)
-    - [ ] 마커 클릭 → 리스트 항목 강조
-  - [ ] 지도 컨트롤
-    - [ ] 줌 인/아웃 버튼
-    - [ ] 지도 유형 선택 (일반/스카이뷰)
+    - [x] 마커 클릭 → 리스트 항목 강조
+  - [x] 지도 컨트롤
+    - [x] 줌 인/아웃 버튼
+    - [x] 지도 유형 선택 (일반/스카이뷰)
     - [ ] 현재 위치 버튼 (선택 사항)
-  - [ ] 반응형 레이아웃
-    - [ ] 데스크톱: 리스트(좌측 50%) + 지도(우측 50%) 분할
-    - [ ] 모바일: 탭 형태로 리스트/지도 전환
+  - [x] 반응형 레이아웃
+    - [x] 데스크톱: 리스트(좌측 50%) + 지도(우측 50%) 분할
+    - [x] 모바일: 탭 형태로 리스트/지도 전환
+
+---
+
+### 추가 개발
+
+- [x] `components/tour-map-view.tsx` 생성
+  - [x] 관광지 목록과 지도를 통합하는 래퍼 컴포넌트
+  - [x] 리스트/지도/분할 뷰 모드 전환 기능
+  - [x] 선택된 관광지 상태 관리 (양방향 연동)
+  - [x] 모바일/데스크톱 자동 감지 및 레이아웃 전환
+  - [x] 모바일에서 마커/카드 클릭 시 자동으로 지도 뷰로 전환
+- [x] `lib/utils/coordinate.ts` 생성
+  - [x] `convertKATECToWGS84()` 함수 구현
+  - [x] KATEC 좌표계를 WGS84로 변환 (10000000으로 나누기)
+  - [x] 좌표 유효성 검증 (한국 영역 범위 체크)
+  - [x] 에러 처리 및 기본값 반환
+- [x] `lib/utils/map-utils.ts` 생성
+  - [x] `calculateCenterFromTours()` 함수 구현
+  - [x] 관광지 목록의 중심 좌표 자동 계산
+  - [x] `calculateBoundsFromTours()` 함수 구현 (경계 박스 계산)
+  - [x] 유효한 좌표만 필터링하여 계산
+- [x] `components/naver-map.tsx` 상세 구현
+  - [x] Next.js Script 컴포넌트로 Naver Maps API 동적 로드
+  - [x] 스크립트 로드 상태 관리 및 에러 처리
+  - [x] 선택된 관광지 마커 강조 (빨간색으로 변경)
+  - [x] 인포윈도우 XSS 방지 (HTML 이스케이프 처리)
+  - [x] 인포윈도우에 주소 정보 표시
+  - [x] 선택된 관광지로 지도 자동 이동 및 줌 조정
+  - [x] 지도 컨트롤 UI (줌 인/아웃, 지도 유형 토글 버튼)
+  - [x] 로딩 상태 표시 (Loader2 아이콘)
+  - [x] API 키 미설정 시 안내 메시지 표시
+  - [x] 접근성 개선 (ARIA 라벨 추가)
+- [x] `app/page.tsx` 지도 통합
+  - [x] TourMapView 컴포넌트 사용하여 목록과 지도 통합 표시
 - [ ] 페이지네이션
   - [ ] 무한 스크롤 구현
     - [ ] Intersection Observer 사용
@@ -333,36 +367,91 @@
 
 ## Phase 3: 상세페이지 (`/places/[contentId]`)
 
-- [ ] 페이지 기본 구조
-  - [ ] `app/places/[contentId]/page.tsx` 생성
-    - [ ] 동적 라우팅 설정
-    - [ ] 뒤로가기 버튼 (헤더)
-    - [ ] 기본 레이아웃 구조
-    - [ ] 라우팅 테스트
-- [ ] 기본 정보 섹션 (MVP 2.4.1)
-  - [ ] `components/tour-detail/detail-info.tsx` 생성
-    - [ ] `getDetailCommon()` API 연동
-    - [ ] 관광지명 (대제목)
-    - [ ] 대표 이미지 (크게 표시)
-    - [ ] 주소 표시 및 복사 기능
-      - [ ] 클립보드 API 사용
-      - [ ] 복사 완료 토스트
-    - [ ] 전화번호 (클릭 시 전화 연결)
-    - [ ] 홈페이지 (링크)
-    - [ ] 개요 (긴 설명문)
-    - [ ] 관광 타입 및 카테고리 뱃지
-    - [ ] 정보 없는 항목 숨김 처리
-- [ ] 운영 정보 섹션 (MVP 2.4.2)
-  - [ ] `components/tour-detail/detail-intro.tsx` 생성
-    - [ ] `getDetailIntro()` API 연동
-    - [ ] 운영시간/개장시간
-    - [ ] 휴무일
-    - [ ] 이용요금
-    - [ ] 주차 가능 여부
-    - [ ] 수용인원
-    - [ ] 체험 프로그램
-    - [ ] 유모차/반려동물 동반 가능 여부
-    - [ ] 정보 없는 항목 숨김 처리
+- [x] 페이지 기본 구조
+  - [x] `app/places/[contentId]/page.tsx` 생성
+    - [x] 동적 라우팅 설정
+    - [x] 뒤로가기 버튼 (헤더)
+    - [x] 기본 레이아웃 구조
+    - [x] 라우팅 테스트
+- [x] 기본 정보 섹션 (MVP 2.4.1)
+  - [x] `components/tour-detail/detail-info.tsx` 생성
+    - [x] `getDetailCommon()` API 연동
+    - [x] 관광지명 (대제목)
+    - [x] 대표 이미지 (크게 표시)
+    - [x] 주소 표시 및 복사 기능
+      - [x] 클립보드 API 사용
+      - [x] 복사 완료 토스트
+    - [x] 전화번호 (클릭 시 전화 연결)
+    - [x] 홈페이지 (링크)
+    - [x] 개요 (긴 설명문)
+    - [x] 관광 타입 및 카테고리 뱃지
+    - [x] 정보 없는 항목 숨김 처리
+
+---
+
+### 추가 개발
+
+- [x] `components/Navbar.tsx` 뒤로가기 버튼 추가
+  - [x] 상세페이지(`/places/[contentId]`)일 때만 표시
+  - [x] `usePathname()`으로 경로 감지
+  - [x] `useRouter().back()`으로 이전 페이지로 이동
+  - [x] 모바일/데스크톱 모두 지원
+- [x] `app/places/[contentId]/page.tsx` 상세 구현
+  - [x] Next.js 15 async params 처리
+  - [x] `getDetailCommon()` API 호출 및 에러 처리
+  - [x] 404 처리 (`notFound()`)
+  - [x] API 에러 처리 (Error 컴포넌트)
+  - [x] 로딩 스켈레톤 UI (Suspense)
+  - [x] 시맨틱 HTML (`<main>`, `<article>`)
+- [x] `components/tour-detail/detail-info.tsx` 상세 구현
+  - [x] 대표 이미지 표시 (이미지 없으면 플레이스홀더)
+  - [x] 주소 복사 기능 (클립보드 API + HTTPS fallback)
+  - [x] 전화번호 `tel:` 링크 (모바일/데스크톱 지원)
+  - [x] 홈페이지 외부 링크 (새 창 열기, `rel="noopener noreferrer"`)
+  - [x] 개요 HTML 이스케이프 처리 (XSS 방지)
+  - [x] 개요 줄바꿈 처리 (`\n` → `<br />`)
+  - [x] 관광 타입 뱃지 표시 (기존 함수 재사용)
+  - [x] 반응형 디자인 (모바일: 단일 컬럼, 데스크톱: 2컬럼)
+  - [x] 접근성 개선 (ARIA 라벨, 시맨틱 HTML, 키보드 포커스)
+  - [x] 이미지 로드 실패 처리 (`onError` 핸들러)
+- [x] 운영 정보 섹션 (MVP 2.4.2)
+  - [x] `components/tour-detail/detail-intro.tsx` 생성
+    - [x] `getDetailIntro()` API 연동
+    - [x] 운영시간/개장시간
+    - [x] 휴무일
+    - [x] 이용요금
+    - [x] 주차 가능 여부
+    - [x] 수용인원
+    - [x] 체험 프로그램
+    - [x] 유모차/반려동물 동반 가능 여부
+    - [x] 정보 없는 항목 숨김 처리
+
+---
+
+### 추가 개발
+
+- [x] `components/tour-detail/detail-intro.tsx` 상세 구현
+  - [x] 운영 정보 섹션 컴포넌트 생성
+  - [x] 운영시간 표시 (`usetime` 필드)
+  - [x] 휴무일 표시 (`restdate` 필드)
+  - [x] 문의처 표시 (`infocenter` 필드)
+  - [x] 이용요금 표시 (`infotext` 필드 - 타입별 필드 확인 필요)
+  - [x] 주차 가능 여부 표시 (`parking` 필드)
+  - [x] 수용인원 표시 (`accomcount` 필드)
+  - [x] 체험 프로그램 표시 (`expguide` 필드)
+  - [x] 유모차 동반 가능 여부 표시 (`chkbabycarriage` 필드)
+  - [x] 반려동물 동반 가능 여부 표시 (`chkpet` 필드)
+  - [x] 정보 없는 항목 숨김 처리 (조건부 렌더링)
+  - [x] 아이콘 사용 (Clock, Calendar, Phone, DollarSign, Car, Users, Sparkles, Baby, Dog)
+  - [x] 반응형 디자인 (모바일/데스크톱)
+  - [x] 접근성 개선 (ARIA 라벨, 시맨틱 HTML)
+  - [x] 카드 형태 레이아웃 (DESIGN.md 디자인 시스템 반영)
+- [x] `app/places/[contentId]/page.tsx` 운영 정보 섹션 통합
+  - [x] `getDetailIntro()` API 호출 추가
+  - [x] `contentTypeId`는 `getDetailCommon()`에서 가져온 값 사용
+  - [x] 운영 정보 조회 실패 시에도 기본 정보는 표시 (선택적 섹션)
+  - [x] DetailIntro 컴포넌트를 DetailInfo 아래에 배치
+  - [x] 에러 처리 (운영 정보 없어도 기본 정보는 표시)
 - [ ] 이미지 갤러리 (MVP 2.4.3)
   - [ ] `components/tour-detail/detail-gallery.tsx` 생성
     - [ ] `getDetailImage()` API 연동

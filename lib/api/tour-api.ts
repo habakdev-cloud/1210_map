@@ -348,15 +348,12 @@ export async function getDetailCommon(params: {
       throw new Error("콘텐츠 ID는 필수입니다.");
     }
 
+    // detailCommon2는 contentId만 필수, 나머지는 선택적 파라미터
+    // API에서 지원하지 않는 파라미터는 제외
+    // detailCommon2는 contentId만 필수 파라미터
+    // 선택적 파라미터들은 API가 지원하지 않을 수 있으므로 제외
     const url = buildApiUrl("/detailCommon2", {
       contentId,
-      defaultYN,
-      firstImageYN,
-      areacodeYN,
-      catcodeYN,
-      addrinfoYN,
-      mapinfoYN,
-      overviewYN,
     });
 
     const response = await fetchWithRetry<DetailCommonResponse>(url);

@@ -2,15 +2,18 @@
 
 import { SignedOut, SignInButton, SignedIn, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Home, BarChart3, Bookmark, Menu } from "lucide-react";
-import { useState } from "react";
+import { Home, BarChart3, Bookmark, Menu, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const Navbar = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isDetailPage, setIsDetailPage] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const navLinks = [
     { href: "/", label: "홈", icon: Home },
@@ -18,16 +21,40 @@ const Navbar = () => {
   ];
 
   const isActive = (href: string) => pathname === href;
+  
+  // 클라이언트 사이드 마운트 확인
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // 상세페이지 여부 확인 (/places/[contentId])
+  // 클라이언트 사이드에서만 확인하여 hydration mismatch 방지
+  useEffect(() => {
+    setIsDetailPage(pathname?.startsWith("/places/") ?? false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 max-w-7xl mx-auto">
-        {/* 로고 */}
-        <Link href="/" className="flex items-center space-x-2">
-          <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            My Trip
-          </span>
-        </Link>
+        {/* 왼쪽: 뒤로가기 버튼 또는 로고 */}
+        <div className="flex items-center gap-4">
+          {isDetailPage && isMounted && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.back()}
+              className="flex-shrink-0"
+              aria-label="뒤로가기"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <Link href="/" className="flex items-center space-x-2">
+            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              My Trip
+            </span>
+          </Link>
+        </div>
 
         {/* 데스크톱 네비게이션 */}
         <nav className="hidden md:flex items-center gap-6">
@@ -44,7 +71,7 @@ const Navbar = () => {
                     : "text-muted-foreground"
                 )}
               >
-                <Icon className="h-4 w-4" />
+                {isMounted && <Icon className="h-4 w-4" />}
                 {link.label}
               </Link>
             );
@@ -59,7 +86,7 @@ const Navbar = () => {
                   : "text-muted-foreground"
               )}
             >
-              <Bookmark className="h-4 w-4" />
+              {isMounted && <Bookmark className="h-4 w-4" />}
               북마크
             </Link>
           </SignedIn>
@@ -91,7 +118,7 @@ const Navbar = () => {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="메뉴 토글"
           >
-            <Menu className="h-5 w-5" />
+            {isMounted && <Menu className="h-5 w-5" />}
           </Button>
         </div>
       </div>
@@ -114,7 +141,7 @@ const Navbar = () => {
                       : "text-muted-foreground hover:bg-accent"
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  {isMounted && <Icon className="h-5 w-5" />}
                   {link.label}
                 </Link>
               );
@@ -130,7 +157,7 @@ const Navbar = () => {
                     : "text-muted-foreground hover:bg-accent"
                 )}
               >
-                <Bookmark className="h-5 w-5" />
+                {isMounted && <Bookmark className="h-5 w-5" />}
                 북마크
               </Link>
             </SignedIn>
