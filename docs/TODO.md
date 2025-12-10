@@ -115,25 +115,68 @@
     - [ ] `RegionStats` 인터페이스
     - [ ] `TypeStats` 인터페이스
     - [ ] `StatsSummary` 인터페이스
-- [ ] 레이아웃 구조
-  - [ ] `app/layout.tsx` 업데이트
-    - [ ] 메타데이터 설정
-    - [ ] 헤더/푸터 구조 확인
-  - [ ] `components/Navbar.tsx` 업데이트
-    - [ ] 로고, 검색창, 로그인 버튼
-    - [ ] 네비게이션 링크 (홈, 통계, 북마크)
-- [ ] 공통 컴포넌트
-  - [ ] `components/ui/loading.tsx` - 로딩 스피너
-  - [ ] `components/ui/skeleton.tsx` - 스켈레톤 UI
-  - [ ] `components/ui/error.tsx` - 에러 메시지
-  - [ ] `components/ui/toast.tsx` - 토스트 알림 (shadcn/ui)
+- [x] 레이아웃 구조
+  - [x] `app/layout.tsx` 업데이트
+    - [x] 메타데이터 설정 (My Trip 프로젝트에 맞게 업데이트)
+    - [x] Open Graph 메타태그 추가
+    - [x] ThemeProvider 추가 (다크/라이트 모드 지원)
+    - [x] Toaster 컴포넌트 추가
+    - [x] suppressHydrationWarning 추가 (hydration 에러 해결)
+  - [x] `components/Navbar.tsx` 업데이트
+    - [x] 로고 "My Trip"으로 변경 (그라디언트 스타일)
+    - [x] 네비게이션 링크 추가 (홈, 통계, 북마크)
+    - [x] 북마크 링크는 로그인한 사용자에게만 표시
+    - [x] 반응형 디자인 (모바일: 햄버거 메뉴, 데스크톱: 가로 메뉴)
+    - [x] 현재 경로 활성 링크 표시
+    - [x] lucide-react 아이콘 사용
+    - [x] 로그인/사용자 메뉴 (Clerk)
+- [x] 공통 컴포넌트
+  - [x] `components/ui/loading.tsx` - 로딩 스피너
+    - [x] Loader2 아이콘 사용
+    - [x] 크기 변형 지원 (sm, md, lg)
+    - [x] PageLoading 컴포넌트 포함
+  - [x] `components/ui/skeleton.tsx` - 스켈레톤 UI (shadcn/ui 설치 완료)
+  - [x] `components/ui/error.tsx` - 에러 메시지
+    - [x] 재시도 버튼 지원
+    - [x] 에러 타입별 메시지 처리
+    - [x] InlineError 컴포넌트 포함
+  - [x] `components/ui/toast.tsx` - 토스트 알림 (shadcn/ui sonner 설치 완료)
+    - [x] Toaster 컴포넌트를 layout.tsx에 추가
+    - [x] ThemeProvider 연동 완료
 
 ## Phase 2: 홈페이지 (`/`) - 관광지 목록
 
-- [ ] 페이지 기본 구조
-  - [ ] `app/page.tsx` 생성
-    - [ ] 기본 레이아웃 (헤더, 메인, 푸터)
-    - [ ] 반응형 컨테이너 설정
+- [x] 페이지 기본 구조
+  - [x] `app/page.tsx` 생성
+    - [x] 기본 레이아웃 (헤더, 메인, 푸터)
+    - [x] 반응형 컨테이너 설정
+
+---
+
+### 추가 개발
+
+- [x] `app/page.tsx` 상세 구현
+  - [x] 기본 레이아웃 (Hero Section, Main Content Area, Footer)
+  - [x] Hero Section 추가 ("한국의 아름다운 관광지를 탐험하세요")
+    - [x] DESIGN.md 타이포그래피 적용 (`text-4xl md:text-5xl font-bold`)
+    - [x] DESIGN.md 간격 시스템 적용 (`py-12 md:py-16`)
+    - [x] 서브 텍스트 및 설명 추가
+  - [x] Main Content Area Placeholder 추가
+    - [x] 필터 영역 Placeholder
+    - [x] 콘텐츠 영역 Placeholder (관광지 목록 표시 예정)
+  - [x] 반응형 컨테이너 설정 (`max-w-7xl mx-auto px-4`)
+  - [x] DESIGN.md 디자인 시스템 반영 (타이포그래피, 간격, 컬러)
+- [x] `components/Footer.tsx` 생성
+  - [x] 저작권 표시 ("My Trip © 2025") - 동적 연도 계산
+  - [x] API 제공 안내 ("한국관광공사 API 제공")
+  - [x] 반응형 디자인 (모바일: 세로 정렬, 데스크톱: 가로 정렬)
+  - [x] DESIGN.md 디자인 시스템 반영
+    - [x] 컬러: `text-muted-foreground`, `bg-background`, `border-border`
+    - [x] 타이포그래피: `text-sm` (DESIGN.md Small)
+    - [x] 간격: `py-8` (모바일), `py-12` (데스크톱)
+  - [x] 다크/라이트 모드 지원 (shadcn/ui 테마)
+  - [x] 구분선: `border-t border-border`
+  - [x] About, Contact 링크 영역 준비 (향후 구현 가능)
 - [ ] 관광지 목록 기능 (MVP 2.1)
   - [ ] `components/tour-card.tsx` 생성
     - [ ] 썸네일 이미지 (기본 이미지 fallback)
