@@ -177,44 +177,108 @@
   - [x] 다크/라이트 모드 지원 (shadcn/ui 테마)
   - [x] 구분선: `border-t border-border`
   - [x] About, Contact 링크 영역 준비 (향후 구현 가능)
-- [ ] 관광지 목록 기능 (MVP 2.1)
-  - [ ] `components/tour-card.tsx` 생성
-    - [ ] 썸네일 이미지 (기본 이미지 fallback)
-    - [ ] 관광지명
-    - [ ] 주소 표시
-    - [ ] 관광 타입 뱃지
-    - [ ] 간단한 개요 (1-2줄)
-    - [ ] 호버 효과 (scale, shadow)
-    - [ ] 클릭 시 상세페이지 이동
-  - [ ] `components/tour-list.tsx` 생성
-    - [ ] 그리드 레이아웃 (반응형)
-    - [ ] 카드 목록 표시
-    - [ ] 로딩 상태 (Skeleton UI)
-    - [ ] 빈 상태 처리
-  - [ ] API 연동
-    - [ ] `getAreaBasedList()` 호출
-    - [ ] 데이터 파싱 및 표시
-    - [ ] 에러 처리
-- [ ] 필터 기능
-  - [ ] `components/tour-filters.tsx` 생성
-    - [ ] 지역 필터 (시/도 선택)
-      - [ ] `getAreaCode()` API로 지역 목록 로드
-      - [ ] 드롭다운 또는 버튼 그룹
-      - [ ] "전체" 옵션
-    - [ ] 관광 타입 필터
-      - [ ] 관광지(12), 문화시설(14), 축제/행사(15), 여행코스(25), 레포츠(28), 숙박(32), 쇼핑(38), 음식점(39)
-      - [ ] 다중 선택 가능
-      - [ ] "전체" 옵션
+- [x] 관광지 목록 기능 (MVP 2.1)
+  - [x] `components/tour-card.tsx` 생성
+    - [x] 썸네일 이미지 (기본 이미지 fallback)
+    - [x] 관광지명
+    - [x] 주소 표시
+    - [x] 관광 타입 뱃지
+    - [ ] 간단한 개요 (1-2줄) - 상세 페이지에서만 제공 예정
+    - [x] 호버 효과 (scale, shadow)
+    - [x] 클릭 시 상세페이지 이동
+  - [x] `components/tour-list.tsx` 생성
+    - [x] 그리드 레이아웃 (반응형)
+    - [x] 카드 목록 표시
+    - [x] 로딩 상태 (Skeleton UI)
+    - [x] 빈 상태 처리
+  - [x] API 연동
+    - [x] `getAreaBasedList()` 호출
+    - [x] 데이터 파싱 및 표시
+    - [x] 에러 처리
+
+---
+
+### 추가 개발
+
+- [x] `components/tour-card.tsx` 상세 구현
+  - [x] Client Component로 구현 (`"use client"`)
+  - [x] 이미지 에러 처리 (`useState` + `onError` 핸들러)
+  - [x] Hydration 문제 해결 (Next.js Image → 일반 img 태그)
+  - [x] 이미지 없을 경우 플레이스홀더 표시 (MapPin 아이콘)
+  - [x] 텍스트 오버플로우 처리 (관광지명: `line-clamp-2`, 주소: `whitespace-nowrap`)
+  - [x] Content Type ID를 한글 이름으로 변환 함수 구현
+  - [x] 접근성 개선 (ARIA 라벨 추가)
+- [x] `components/tour-list.tsx` 상세 구현
+  - [x] 에러 상태 처리 (`Error` 컴포넌트 사용)
+  - [x] 빈 상태 UI 개선 (MapPin 아이콘 + 메시지)
+  - [x] 스켈레톤 UI 구조 (이미지 + 제목 + 주소 + 뱃지 영역)
+- [x] `app/page.tsx` API 연동 상세
+  - [x] Server Component에서 `getAreaBasedList()` 호출
+  - [x] 초기 파라미터 설정 (`numOfRows: 20`, `pageNo: 1`)
+  - [x] 에러 처리 (try-catch)
+  - [x] TourList 컴포넌트에 데이터 전달
+- [x] 이미지 및 스타일 설정
+  - [x] `next.config.ts`에 한국관광공사 이미지 도메인 추가
+    - [x] `api.visitkorea.or.kr`
+    - [x] `tong.visitkorea.or.kr`
+    - [x] `www.visitkorea.or.kr`
+  - [x] `app/globals.css`에 `line-clamp` 유틸리티 클래스 추가 (`line-clamp-1`, `line-clamp-2`)
+  - [x] API 클라이언트 개선
+  - [x] `listYN` 파라미터 제거 (한국관광공사 API에서 지원하지 않음)
+  - [x] 에러 응답 구조 처리 개선 (에러 응답과 정상 응답 구분)
+- [x] 필터 기능
+  - [x] `components/tour-filters.tsx` 생성
+    - [x] 지역 필터 (시/도 선택)
+      - [x] `getAreaCode()` API로 지역 목록 로드
+      - [x] shadcn/ui Select 드롭다운 사용
+      - [x] "전체" 옵션 ("all" 값 사용)
+    - [x] 관광 타입 필터
+      - [x] 관광지(12), 문화시설(14), 축제/행사(15), 여행코스(25), 레포츠(28), 숙박(32), 쇼핑(38), 음식점(39)
+      - [x] 단일 선택 (Select 드롭다운)
+      - [x] "전체" 옵션 ("all" 값 사용)
     - [ ] 반려동물 동반 가능 필터 (MVP 2.5)
       - [ ] 토글 버튼
       - [ ] 크기별 필터 (소형, 중형, 대형)
-    - [ ] 정렬 옵션
-      - [ ] 최신순 (modifiedtime)
-      - [ ] 이름순 (가나다)
-    - [ ] 필터 상태 관리 (URL 쿼리 파라미터 또는 상태)
-  - [ ] 필터 적용 로직
-    - [ ] 필터 변경 시 API 재호출
-    - [ ] 필터 조합 처리
+    - [x] 정렬 옵션
+      - [x] 최신순 (modifiedtime DESC)
+      - [x] 이름순 (title ASC - 가나다순)
+    - [x] 필터 상태 관리 (URL 쿼리 파라미터 동기화)
+  - [x] 필터 적용 로직
+    - [x] 필터 변경 시 API 재호출 (URL 쿼리 파라미터 기반)
+    - [x] 필터 조합 처리 (지역 + 타입 + 정렬)
+
+---
+
+### 추가 개발
+
+- [x] 필터 기능 상세 구현
+  - [x] `components/tour-filters.tsx` 생성
+    - [x] shadcn/ui Select 컴포넌트 설치 및 사용
+    - [x] 지역 필터: 시/도 선택 드롭다운 (MapPin 아이콘)
+    - [x] 관광 타입 필터: 8가지 타입 선택 드롭다운 (Tag 아이콘)
+    - [x] 정렬 옵션: 최신순/이름순 선택 (ArrowUpDown 아이콘)
+    - [x] 필터 초기화 버튼 (활성 필터 시 표시)
+    - [x] 선택된 필터 뱃지 표시 (지역, 타입)
+  - [x] URL 쿼리 파라미터 동기화
+    - [x] `useSearchParams`, `useRouter` 사용
+    - [x] 필터 변경 시 URL 업데이트 (`?areaCode=1&contentTypeId=12&sort=latest`)
+    - [x] "전체" 옵션은 "all" 값 사용 (shadcn/ui Select 제약사항)
+    - [x] 필터 변경 시 `pageNo` 자동 리셋
+  - [x] `app/page.tsx` 필터 연동
+    - [x] Next.js 15 async `searchParams` 처리
+    - [x] 지역 코드 목록 조회 (`getAreaCode()`)
+    - [x] 필터 파라미터로 관광지 목록 조회 (`getAreaBasedList()`)
+    - [x] 정렬 기능 구현 (클라이언트 사이드 정렬)
+      - [x] 최신순: `modifiedtime` 기준 내림차순
+      - [x] 이름순: `title` 기준 가나다순 (한글 정렬)
+  - [x] 스타일링 및 접근성
+    - [x] 반응형 디자인 (모바일/데스크톱)
+    - [x] Sticky 배치 (상단 고정, `top-16`)
+    - [x] ARIA 라벨 추가 (접근성)
+    - [x] DESIGN.md 디자인 시스템 반영
+  - [x] 오류 수정
+    - [x] Select.Item 빈 문자열 오류 해결 ("all" 값 사용)
+    - [x] TourCard hydration 오류 해결 (`suppressHydrationWarning` 추가)
 - [ ] 검색 기능 (MVP 2.3)
   - [ ] `components/tour-search.tsx` 생성
     - [ ] 검색창 UI (헤더 또는 메인 영역)

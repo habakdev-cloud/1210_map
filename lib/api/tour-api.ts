@@ -112,13 +112,26 @@ async function fetchWithRetry<T>(
 
       const data: T = await response.json();
 
-      // API 응답 에러 체크
-      if (data && typeof data === "object" && "response" in data) {
-        const apiResponse = data as { response: { header: { resultCode: string; resultMsg: string } } };
-        if (apiResponse.response.header.resultCode !== "0000") {
-          throw new Error(
-            `API error: ${apiResponse.response.header.resultCode} - ${apiResponse.response.header.resultMsg}`
-          );
+      // API 에러 응답 체크 (에러 응답은 response 속성이 없고 직접 resultCode를 가짐)
+      if (data && typeof data === "object") {
+        // 에러 응답 구조: { responseTime, resultCode, resultMsg }
+        if ("resultCode" in data && "resultMsg" in data && !("response" in data)) {
+          const errorResponse = data as { resultCode: string; resultMsg: string };
+          if (errorResponse.resultCode !== "0000") {
+            throw new Error(
+              `API error: ${errorResponse.resultCode} - ${errorResponse.resultMsg}`
+            );
+          }
+        }
+        
+        // 정상 응답 구조: { response: { header: { resultCode, resultMsg }, body: {...} } }
+        if ("response" in data) {
+          const apiResponse = data as { response?: { header?: { resultCode?: string; resultMsg?: string } } };
+          if (apiResponse.response?.header?.resultCode && apiResponse.response.header.resultCode !== "0000") {
+            throw new Error(
+              `API error: ${apiResponse.response.header.resultCode} - ${apiResponse.response.header.resultMsg || "Unknown error"}`
+            );
+          }
         }
       }
 
@@ -194,7 +207,6 @@ export async function getAreaBasedList(params: {
   contentTypeId?: string;
   numOfRows?: number;
   pageNo?: number;
-  listYN?: "Y" | "N";
 }): Promise<TourItem[]> {
   try {
     const {
@@ -202,19 +214,42 @@ export async function getAreaBasedList(params: {
       contentTypeId,
       numOfRows = 10,
       pageNo = 1,
-      listYN = "Y",
     } = params;
 
+    // listYN 파라미터 제거 (한국관광공사 API에서 지원하지 않음)
     const url = buildApiUrl("/areaBasedList2", {
       areaCode,
       contentTypeId,
       numOfRows,
       pageNo,
-      listYN,
     });
 
     const response = await fetchWithRetry<AreaBasedListResponse>(url);
-    return normalizeItems(response.response.body.items?.item);
+    
+    // 응답 구조 확인 및 안전하게 접근
+    if (!response) {
+      console.error("API 응답이 없습니다");
+      throw new Error("API 응답이 없습니다");
+    }
+    
+    // 정상 응답인지 확인
+    if (!("response" in response)) {
+      console.error("API 응답 구조가 올바르지 않습니다:", response);
+      throw new Error("API 응답 구조가 올바르지 않습니다: response 속성 없음");
+    }
+    
+    if (!response.response || !response.response.body) {
+      console.error("API 응답에 body 속성이 없습니다:", response.response);
+      throw new Error("API 응답 구조가 올바르지 않습니다: body 속성 없음");
+    }
+    
+    const items = response.response.body.items?.item;
+    if (!items) {
+      console.warn("API 응답에 items가 없습니다:", response.response.body);
+      return [];
+    }
+    
+    return normalizeItems(items);
   } catch (error) {
     console.error("지역 기반 목록 조회 실패:", error);
     throw error;

@@ -3,12 +3,12 @@
  * @description 홈페이지 - 관광지 목록
  *
  * 전국 관광지 정보를 검색하고 조회할 수 있는 메인 페이지입니다.
- * Phase 2에서는 기본 레이아웃 구조만 설정하고,
- * 향후 관광지 목록, 필터, 지도 기능을 추가할 예정입니다.
+ * 한국관광공사 API를 통해 관광지 목록을 가져와 카드 형태로 표시합니다.
  *
  * 레이아웃 구조:
- * - Hero Section (선택 사항)
- * - Main Content Area (관광지 목록/지도 영역)
+ * - Hero Section
+ * - 필터 컴포넌트
+ * - Main Content Area (관광지 목록)
  * - Footer
  *
  * @see {@link /docs/PRD.md} - MVP 2.1 관광지 목록 + 필터
@@ -16,11 +16,83 @@
  */
 
 import Footer from "@/components/Footer";
+import TourFilters from "@/components/tour-filters";
+import TourMapView from "@/components/tour-map-view";
+import { getAreaBasedList, getAreaCode } from "@/lib/api/tour-api";
+import type { TourItem } from "@/lib/types/tour";
 
-export default function Home() {
+interface HomeProps {
+  searchParams: Promise<{
+    areaCode?: string;
+    contentTypeId?: string;
+    sort?: string;
+    pageNo?: string;
+  }>;
+}
+
+/**
+ * 정렬 함수
+ */
+function sortTours(tours: TourItem[], sortType: string): TourItem[] {
+  const sorted = [...tours];
+
+  switch (sortType) {
+    case "name":
+      // 이름순 (가나다순)
+      sorted.sort((a, b) => a.title.localeCompare(b.title, "ko"));
+      break;
+    case "latest":
+    default:
+      // 최신순 (modifiedtime 기준, 내림차순)
+      sorted.sort((a, b) => {
+        const timeA = a.modifiedtime ? parseInt(a.modifiedtime) : 0;
+        const timeB = b.modifiedtime ? parseInt(b.modifiedtime) : 0;
+        return timeB - timeA;
+      });
+      break;
+  }
+
+  return sorted;
+}
+
+export default async function Home({ searchParams }: HomeProps) {
+  // URL 쿼리 파라미터 읽기 (Next.js 15 async)
+  const params = await searchParams;
+  const areaCode = params.areaCode || undefined;
+  const contentTypeId = params.contentTypeId || undefined;
+  const sort = params.sort || "latest";
+  const pageNo = parseInt(params.pageNo || "1", 10);
+
+  // 지역 코드 목록 조회 (시/도만)
+  let areaCodes: Awaited<ReturnType<typeof getAreaCode>> = [];
+  try {
+    areaCodes = await getAreaCode();
+  } catch (err) {
+    console.error("지역코드 조회 실패:", err);
+  }
+
+  // 관광지 목록 조회
+  let tours: TourItem[] = [];
+  let error: Error | null = null;
+
+  try {
+    tours = await getAreaBasedList({
+      areaCode,
+      contentTypeId,
+      numOfRows: 20, // PRD.md: 10-20개
+      pageNo,
+    });
+
+    // 정렬 적용 (API가 정렬을 지원하지 않으므로 클라이언트 사이드 정렬)
+    tours = sortTours(tours, sort);
+  } catch (err) {
+    console.error("관광지 목록 조회 실패:", err);
+    error = err instanceof Error ? err : new Error(String(err));
+  }
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)] flex-col">
-      {/* Hero Section (선택 사항) */}
+      {/* Hero Section */}
       <section className="w-full py-12 md:py-16">
         <div className="container max-w-7xl mx-auto px-4">
           <div className="text-center space-y-4">
@@ -31,32 +103,18 @@ export default function Home() {
               전국 각지의 관광지 정보를 검색하고, 지도에서 위치를 확인하며,
               상세 정보를 알아보세요.
             </p>
-            {/* 검색창 및 필터는 Phase 2 후반부에 구현 예정 */}
           </div>
         </div>
       </section>
 
+      {/* 필터 영역 */}
+      <TourFilters areaCodes={areaCodes} />
+
       {/* Main Content Area */}
       <main className="flex-1 container max-w-7xl mx-auto px-4 pb-8">
         <div className="space-y-8">
-          {/* 필터 영역 (Placeholder) - Phase 2 후반부에 구현 예정 */}
-          <div className="border-b border-border pb-4">
-            <p className="text-sm text-muted-foreground">
-              필터 영역 (지역, 관광 타입, 정렬 옵션)이 여기에 표시됩니다.
-            </p>
-          </div>
-
-          {/* 콘텐츠 영역 (Placeholder) */}
-          <div className="min-h-[400px] flex items-center justify-center rounded-lg border border-dashed border-border">
-            <div className="text-center space-y-4 p-8">
-              <p className="text-lg font-medium text-foreground">
-                관광지 목록이 여기에 표시됩니다
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Phase 2 후반부에 관광지 카드, 리스트, 지도가 추가될 예정입니다.
-              </p>
-            </div>
-          </div>
+          {/* 관광지 목록 및 지도 */}
+          <TourMapView tours={tours} error={error} />
         </div>
       </main>
 
