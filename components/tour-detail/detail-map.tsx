@@ -57,29 +57,6 @@ declare global {
       };
     };
   }
-
-  // 전역 naver 변수 선언
-  const naver: {
-    maps: {
-      LatLng: new (lat: number, lng: number) => any;
-      Map: new (element: HTMLElement, options: any) => NaverMap;
-      Marker: new (options: any) => NaverMarker;
-      InfoWindow: new (options: any) => NaverInfoWindow;
-      Point: new (x: number, y: number) => any;
-      Event: {
-        addListener: (target: any, event: string, handler: () => void) => void;
-        removeListener: (
-          target: any,
-          event: string,
-          handler: () => void,
-        ) => void;
-      };
-      MapTypeId: {
-        NORMAL: string;
-        SATELLITE: string;
-      };
-    };
-  };
 }
 
 interface DetailMapProps {
@@ -116,12 +93,22 @@ export default function DetailMap({ detail }: DetailMapProps) {
 
   // 스크립트 로드 완료 핸들러
   const handleScriptLoad = () => {
-    setIsScriptLoaded(true);
+    // 스크립트가 로드되었지만 naver 객체가 있는지 확인
+    if (typeof window !== "undefined" && window.naver && window.naver.maps) {
+      setIsScriptLoaded(true);
+    } else {
+      console.error("네이버 지도 API 스크립트는 로드되었지만 naver 객체를 찾을 수 없습니다.");
+      setError("네이버 지도 API를 초기화할 수 없습니다. API 키와 서비스 설정을 확인해주세요.");
+      setIsLoading(false);
+    }
   };
 
   // 스크립트 로드 에러 핸들러
-  const handleScriptError = () => {
-    setError("네이버 지도 API를 로드할 수 없습니다. API 키를 확인해주세요.");
+  const handleScriptError = (error?: Error | string) => {
+    console.error("네이버 지도 API 스크립트 로드 실패:", error);
+    setError(
+      "네이버 지도 API를 로드할 수 없습니다. Vercel 환경변수에서 NEXT_PUBLIC_NAVER_MAP_CLIENT_ID를 확인해주세요."
+    );
     setIsLoading(false);
   };
 
@@ -129,9 +116,17 @@ export default function DetailMap({ detail }: DetailMapProps) {
   useEffect(() => {
     if (!isScriptLoaded || !mapRef.current || !clientId || !coordinates) {
       if (!clientId) {
-        setError("네이버 지도 API 키가 설정되지 않았습니다.");
+        setError("네이버 지도 API 키가 설정되지 않았습니다. Vercel 환경변수를 확인해주세요.");
         setIsLoading(false);
       }
+      return;
+    }
+
+    // naver 객체 확인
+    if (typeof window === "undefined" || !window.naver || !window.naver.maps) {
+      console.error("naver.maps 객체를 찾을 수 없습니다.");
+      setError("네이버 지도 API가 로드되지 않았습니다. 페이지를 새로고침해주세요.");
+      setIsLoading(false);
       return;
     }
 
@@ -183,7 +178,8 @@ export default function DetailMap({ detail }: DetailMapProps) {
       setError(null);
     } catch (err) {
       console.error("지도 초기화 실패:", err);
-      setError("지도를 초기화할 수 없습니다.");
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      setError(`지도를 초기화할 수 없습니다: ${errorMessage}`);
       setIsLoading(false);
     }
   }, [isScriptLoaded, clientId, coordinates, detail]);
@@ -303,7 +299,13 @@ export default function DetailMap({ detail }: DetailMapProps) {
         src={`https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}`}
         strategy="lazyOnload"
         onLoad={handleScriptLoad}
-        onError={handleScriptError}
+        onError={(e) => handleScriptError(e)}
+        onReady={() => {
+          // 스크립트가 준비되었을 때 naver 객체 확인
+          if (typeof window !== "undefined" && window.naver && window.naver.maps) {
+            console.log("네이버 지도 API 로드 완료");
+          }
+        }}
       />
 
       <section
@@ -330,9 +332,16 @@ export default function DetailMap({ detail }: DetailMapProps) {
             {/* 에러 상태 */}
             {error && !isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
-                <div className="text-center space-y-2 px-4">
+                <div className="text-center space-y-3 px-4 max-w-md">
                   <MapPin className="w-12 h-12 text-muted-foreground mx-auto opacity-50" />
-                  <p className="text-sm text-destructive">{error}</p>
+                  <p className="text-sm font-medium text-destructive">{error}</p>
+                  {!clientId && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Vercel 대시보드 → Settings → Environment Variables에서
+                      <br />
+                      NEXT_PUBLIC_NAVER_MAP_CLIENT_ID를 설정해주세요.
+                    </p>
+                  )}
                 </div>
               </div>
             )}
