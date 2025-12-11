@@ -50,6 +50,11 @@ export default function BookmarkButton({
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isToggling, setIsToggling] = useState(false);
+  const [isMounted, setIsMounted] = useState(false); // 클라이언트 마운트 확인
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   /**
    * 북마크 상태 조회
@@ -81,6 +86,22 @@ export default function BookmarkButton({
 
     fetchBookmarkStatus();
   }, [contentId, isLoaded, userId]);
+
+  // SSR과 CSR 초기 렌더를 동일하게 맞추기 위해 마운트 이전에는 기본 버튼을 고정 렌더
+  if (!isMounted) {
+    return (
+      <Button
+        variant={variant}
+        size={size}
+        disabled
+        className={className}
+        aria-label="북마크"
+      >
+        <StarOff className="w-4 h-4 mr-2" aria-hidden="true" />
+        북마크
+      </Button>
+    );
+  }
 
   /**
    * 북마크 토글 (추가/제거)
@@ -191,5 +212,7 @@ export default function BookmarkButton({
     </Button>
   );
 }
+
+
 
 

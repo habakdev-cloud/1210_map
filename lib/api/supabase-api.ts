@@ -23,10 +23,31 @@ import { auth } from "@clerk/nextjs/server";
 /**
  * Clerk User ID로 Supabase User ID 조회
  * 사용자가 없으면 자동으로 동기화를 시도합니다.
+ * 
+ * @param clerkUserId - Clerk 사용자 ID
+ * @param retryCount - 재시도 횟수 (기본값: 1)
+ * @returns Supabase User ID 또는 null
  */
-async function getSupabaseUserId(clerkUserId: string): Promise<string | null> {
+async function getSupabaseUserId(
+  clerkUserId: string,
+  retryCount: number = 1
+): Promise<string | null> {
   try {
-    const supabase = await createClerkSupabaseClient();
+    // Supabase 클라이언트 생성 (에러 처리 강화)
+    let supabase;
+    try {
+      supabase = await createClerkSupabaseClient();
+    } catch (clientError) {
+      console.error(
+        `[getSupabaseUserId] Supabase 클라이언트 생성 실패:`,
+        {
+          clerkUserId,
+          error: clientError instanceof Error ? clientError.message : String(clientError),
+          stack: clientError instanceof Error ? clientError.stack : undefined,
+        }
+      );
+      return null;
+    }
     
     // 먼저 사용자 조회
     const { data, error } = await supabase
@@ -37,7 +58,9 @@ async function getSupabaseUserId(clerkUserId: string): Promise<string | null> {
 
     // 사용자가 없으면 동기화 시도
     if (error && error.code === "PGRST116") {
-      console.log("사용자가 Supabase에 없음, 동기화 시도:", clerkUserId);
+      console.log(
+        `[getSupabaseUserId] 사용자가 Supabase에 없음, 동기화 시도: ${clerkUserId}`
+      );
       
       try {
         // 동기화 API 호출 (서버 사이드에서 직접 동기화)
@@ -45,50 +68,137 @@ async function getSupabaseUserId(clerkUserId: string): Promise<string | null> {
         const client = await clerkClient();
         const clerkUser = await client.users.getUser(clerkUserId);
 
-        if (clerkUser) {
-          // Service Role 클라이언트로 직접 동기화
-          const { getServiceRoleClient } = await import("@/lib/supabase/service-role");
-          const serviceSupabase = getServiceRoleClient();
-
-          const { data: syncedData, error: syncError } = await serviceSupabase
-            .from("users")
-            .upsert(
-              {
-                clerk_id: clerkUser.id,
-                name:
-                  clerkUser.fullName ||
-                  clerkUser.username ||
-                  clerkUser.emailAddresses[0]?.emailAddress ||
-                  "Unknown",
-              },
-              {
-                onConflict: "clerk_id",
-              }
-            )
-            .select()
-            .single();
-
-          if (syncError) {
-            console.error("사용자 동기화 실패:", syncError);
-            return null;
-          }
-
-          return syncedData?.id || null;
+        if (!clerkUser) {
+          console.error(
+            `[getSupabaseUserId] Clerk에서 사용자 정보를 찾을 수 없음: ${clerkUserId}`
+          );
+          return null;
         }
+
+        // Service Role 클라이언트로 직접 동기화
+        const { getServiceRoleClient } = await import("@/lib/supabase/service-role");
+        const serviceSupabase = getServiceRoleClient();
+
+        const userName =
+          clerkUser.fullName ||
+          clerkUser.username ||
+          clerkUser.emailAddresses[0]?.emailAddress ||
+          "Unknown";
+
+        const { data: syncedData, error: syncError } = await serviceSupabase
+          .from("users")
+          .upsert(
+            {
+              clerk_id: clerkUser.id,
+              name: userName,
+            },
+            {
+              onConflict: "clerk_id",
+            }
+          )
+          .select()
+          .single();
+
+        if (syncError) {
+          console.error(
+            `[getSupabaseUserId] 사용자 동기화 실패:`,
+            {
+              clerkUserId,
+              error: syncError.message,
+              code: syncError.code,
+              details: syncError.details,
+            }
+          );
+          
+          // 재시도 로직 (최대 1회)
+          if (retryCount > 0) {
+            console.log(
+              `[getSupabaseUserId] 재시도 중... (남은 횟수: ${retryCount - 1})`
+            );
+            // 500ms 대기 후 재시도
+            await new Promise((resolve) => setTimeout(resolve, 500));
+            return getSupabaseUserId(clerkUserId, retryCount - 1);
+          }
+          
+          return null;
+        }
+
+        if (!syncedData?.id) {
+          console.error(
+            `[getSupabaseUserId] 동기화 후에도 사용자 ID를 찾을 수 없음: ${clerkUserId}`
+          );
+          return null;
+        }
+
+        console.log(
+          `[getSupabaseUserId] 사용자 동기화 성공: ${clerkUserId} -> ${syncedData.id}`
+        );
+        return syncedData.id;
       } catch (syncErr) {
-        console.error("사용자 동기화 중 에러:", syncErr);
+        console.error(
+          `[getSupabaseUserId] 사용자 동기화 중 예외 발생:`,
+          {
+            clerkUserId,
+            error: syncErr instanceof Error ? syncErr.message : String(syncErr),
+            stack: syncErr instanceof Error ? syncErr.stack : undefined,
+          }
+        );
         return null;
       }
     }
 
     if (error) {
-      console.error("Supabase User ID 조회 실패:", error);
+      console.error(
+        `[getSupabaseUserId] Supabase User ID 조회 실패:`,
+        {
+          clerkUserId,
+          error: error.message,
+          code: error.code,
+          details: error.details,
+        }
+      );
       return null;
     }
 
-    return data?.id || null;
+    if (!data?.id) {
+      console.error(
+        `[getSupabaseUserId] 조회 결과에 사용자 ID가 없음: ${clerkUserId}`
+      );
+      return null;
+    }
+
+    return data.id;
   } catch (error) {
-    console.error("Supabase User ID 조회 중 에러:", error);
+    // 에러 객체의 모든 속성을 로깅
+    const errorDetails: Record<string, unknown> = {
+      clerkUserId,
+    };
+
+    if (error instanceof Error) {
+      errorDetails.error = error.message;
+      errorDetails.name = error.name;
+      errorDetails.stack = error.stack;
+      // Error 객체의 모든 속성 추가
+      Object.keys(error).forEach((key) => {
+        if (!["message", "name", "stack"].includes(key)) {
+          errorDetails[key] = (error as Record<string, unknown>)[key];
+        }
+      });
+    } else {
+      errorDetails.error = String(error);
+      errorDetails.type = typeof error;
+      // 일반 객체인 경우 모든 속성 추가
+      if (error && typeof error === "object") {
+        Object.keys(error).forEach((key) => {
+          errorDetails[key] = (error as Record<string, unknown>)[key];
+        });
+      }
+    }
+
+    console.error(
+      `[getSupabaseUserId] Supabase User ID 조회 중 예외 발생:`,
+      errorDetails
+    );
     return null;
   }
 }

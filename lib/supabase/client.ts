@@ -20,7 +20,35 @@ import { createBrowserClient } from "@supabase/ssr";
  * }
  * ```
  */
-export const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// 공개 데이터용 클라이언트 생성 (에러 처리 포함)
+let supabaseInstance: ReturnType<typeof createBrowserClient> | null = null;
+
+try {
+  supabaseInstance = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      // 쿠키만 사용하도록 명시
+      cookies: {
+        getAll() {
+          return [];
+        },
+        setAll() {
+          // 쿠키 설정은 브라우저에서 자동으로 처리됨
+        },
+      },
+    }
+  );
+} catch (error) {
+  // 스토리지 접근 에러를 무시하고 기본 클라이언트 생성
+  console.warn(
+    "[supabase client] 클라이언트 생성 중 에러 발생 (무시됨):",
+    error instanceof Error ? error.message : String(error)
+  );
+  supabaseInstance = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+export const supabase = supabaseInstance!;

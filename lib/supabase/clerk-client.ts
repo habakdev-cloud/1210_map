@@ -42,16 +42,46 @@ export function useClerkSupabaseClient() {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-    return createBrowserClient(supabaseUrl, supabaseKey, {
-      // Clerk 토큰을 Supabase 요청에 포함
-      async accessToken() {
-        try {
-          return (await session?.getToken()) ?? null;
-        } catch {
-          return null;
-        }
-      },
-    });
+    try {
+      return createBrowserClient(supabaseUrl, supabaseKey, {
+        // Clerk 토큰을 Supabase 요청에 포함
+        async accessToken() {
+          try {
+            return (await session?.getToken()) ?? null;
+          } catch {
+            return null;
+          }
+        },
+        // 쿠키만 사용하도록 명시 (localStorage 접근 방지)
+        cookies: {
+          getAll() {
+            // 쿠키 읽기는 브라우저에서 자동으로 처리됨
+            return [];
+          },
+          setAll() {
+            // 쿠키 설정은 브라우저에서 자동으로 처리됨
+            // 여기서는 아무 작업도 하지 않음
+          },
+        },
+      });
+    } catch (error) {
+      // 스토리지 접근 에러를 무시하고 기본 클라이언트 반환
+      console.warn(
+        "[useClerkSupabaseClient] 클라이언트 생성 중 에러 발생 (무시됨):",
+        error instanceof Error ? error.message : String(error)
+      );
+      
+      // 에러가 발생해도 기본 클라이언트 반환 (쿠키는 여전히 작동)
+      return createBrowserClient(supabaseUrl, supabaseKey, {
+        async accessToken() {
+          try {
+            return (await session?.getToken()) ?? null;
+          } catch {
+            return null;
+          }
+        },
+      });
+    }
   }, [session]);
 
   return supabase;

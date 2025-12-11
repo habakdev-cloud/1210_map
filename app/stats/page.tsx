@@ -1,0 +1,112 @@
+/**
+ * @file app/stats/page.tsx
+ * @description 통계 대시보드 페이지
+ *
+ * 전국 관광지 데이터를 차트로 시각화하여 사용자가 한눈에 현황을 파악할 수 있는 통계 페이지입니다.
+ *
+ * 주요 기능:
+ * - 통계 요약 카드 (전체 개수, Top 3 지역/타입)
+ * - 지역별 관광지 분포 차트 (Bar Chart)
+ * - 타입별 관광지 분포 차트 (Donut Chart)
+ * - 반응형 디자인 (모바일 우선)
+ *
+ * @see {@link /docs/PRD.md} - MVP 2.6 통계 대시보드
+ * @see {@link /docs/DESIGN.md} - 통계 페이지 레이아웃
+ */
+
+import { Suspense } from "react";
+
+/**
+ * Route Segment Config: ISR (Incremental Static Regeneration)
+ * 
+ * 통계 데이터는 변동이 적으므로 24시간마다 재검증합니다.
+ * 첫 요청 시에만 API를 호출하고, 이후 24시간 동안은 캐시된 데이터를 사용합니다.
+ * 이를 통해 rate limit을 피하고 로딩 속도를 최적화합니다.
+ */
+export const revalidate = 86400; // 24시간 (초 단위)
+import { Skeleton } from "@/components/ui/skeleton";
+import StatsSummary, { StatsSummarySkeleton } from "@/components/stats/stats-summary";
+import RegionChartWrapper from "@/components/stats/region-chart-wrapper";
+import { RegionChartSkeleton } from "@/components/stats/region-chart";
+import TypeChartWrapper from "@/components/stats/type-chart-wrapper";
+import { TypeChartSkeleton } from "@/components/stats/type-chart";
+
+/**
+ * 로딩 스켈레톤 컴포넌트
+ */
+function StatsPageSkeleton() {
+  return (
+    <div className="container max-w-7xl mx-auto px-4 py-8 space-y-8">
+      {/* 페이지 제목 스켈레톤 */}
+      <div className="space-y-4">
+        <Skeleton className="h-9 w-64" />
+        <Skeleton className="h-6 w-96 max-w-full" />
+      </div>
+
+      {/* 통계 요약 카드 영역 스켈레톤 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, index) => (
+          <Skeleton key={index} className="h-32 w-full" />
+        ))}
+      </div>
+
+      {/* 지역별 분포 차트 영역 스켈레톤 */}
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+
+      {/* 타입별 분포 차트 영역 스켈레톤 */}
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-[400px] w-full" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 통계 대시보드 페이지 컴포넌트
+ */
+export default async function StatsPage() {
+  return (
+    <main className="min-h-[calc(100vh-4rem)]">
+      <div className="container max-w-7xl mx-auto px-4 py-8">
+        {/* 페이지 제목 */}
+        <div className="mb-8 space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">통계 대시보드</h1>
+          <p className="text-lg text-muted-foreground">
+            전국 관광지 현황을 한눈에 확인하세요
+          </p>
+        </div>
+
+        <Suspense fallback={<StatsPageSkeleton />}>
+          {/* 통계 요약 카드 영역 (상단) */}
+          <section className="mb-8" aria-label="통계 요약">
+            <Suspense fallback={<StatsSummarySkeleton />}>
+              <StatsSummary />
+            </Suspense>
+          </section>
+
+          {/* 지역별 분포 차트 영역 (중단) */}
+          <section className="mb-8" aria-label="지역별 관광지 분포">
+            <h2 className="text-2xl font-semibold mb-4">지역별 관광지 분포</h2>
+            <Suspense fallback={<RegionChartSkeleton />}>
+              <RegionChartWrapper />
+            </Suspense>
+          </section>
+
+          {/* 타입별 분포 차트 영역 (하단) */}
+          <section className="mb-8" aria-label="타입별 관광지 분포">
+            <h2 className="text-2xl font-semibold mb-4">타입별 관광지 분포</h2>
+            <Suspense fallback={<TypeChartSkeleton />}>
+              <TypeChartWrapper />
+            </Suspense>
+          </section>
+        </Suspense>
+      </div>
+    </main>
+  );
+}
+
+

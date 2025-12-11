@@ -94,6 +94,7 @@ async function fetchWithRetry<T>(
   delay: number = 1000
 ): Promise<T> {
   let lastError: Error | null = null;
+  let lastStatusCode: number | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -104,11 +105,18 @@ async function fetchWithRetry<T>(
         },
         // Next.js에서 캐싱 제어 (서버 사이드)
         ...(typeof window === "undefined" && {
-          next: { revalidate: 3600 }, // 1시간 캐싱
+          next: { revalidate: 86400 }, // 24시간 캐싱 (통계 데이터 최적화)
         }),
       });
 
       if (!response.ok) {
+        lastStatusCode = response.status;
+        // 429 (Too Many Requests) 에러는 특별 처리
+        if (response.status === 429) {
+          const retryAfter = response.headers.get("Retry-After");
+          const waitTime = retryAfter ? parseInt(retryAfter) * 1000 : delay * Math.pow(2, attempt + 2);
+          throw new Error(`HTTP 429 (Rate Limit): ${waitTime}ms 대기 필요`);
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -148,9 +156,19 @@ async function fetchWithRetry<T>(
 
       // 마지막 시도가 아니면 재시도
       if (attempt < maxRetries) {
-        const waitTime = delay * Math.pow(2, attempt); // 지수 백오프
+        // 429 에러인 경우 더 긴 대기 시간
+        let waitTime: number;
+        if (lastStatusCode === 429 || lastError?.message.includes("429")) {
+          // 429 에러: Retry-After 헤더 값 추출 또는 기본 5초
+          const retryAfterMatch = lastError?.message.match(/(\d+)ms/);
+          waitTime = retryAfterMatch ? parseInt(retryAfterMatch[1]) : 5000;
+          console.warn(`⚠️ Rate Limit 감지, ${waitTime}ms 대기 후 재시도 (${attempt + 1}/${maxRetries})`);
+        } else {
+          // 일반 에러: 지수 백오프
+          waitTime = delay * Math.pow(2, attempt);
+          console.warn(`API 호출 실패, ${waitTime}ms 후 재시도 (${attempt + 1}/${maxRetries})`);
+        }
         await new Promise((resolve) => setTimeout(resolve, waitTime));
-        console.warn(`API 호출 실패, ${waitTime}ms 후 재시도 (${attempt + 1}/${maxRetries})`);
       }
     }
   }
