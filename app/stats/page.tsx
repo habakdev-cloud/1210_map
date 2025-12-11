@@ -17,13 +17,13 @@
 import { Suspense } from "react";
 
 /**
- * Route Segment Config: ISR (Incremental Static Regeneration)
+ * Route Segment Config: 동적 렌더링
  * 
- * 통계 데이터는 변동이 적으므로 24시간마다 재검증합니다.
- * 첫 요청 시에만 API를 호출하고, 이후 24시간 동안은 캐시된 데이터를 사용합니다.
- * 이를 통해 rate limit을 피하고 로딩 속도를 최적화합니다.
+ * 통계 페이지는 빌드 시 렌더링하지 않고 런타임에만 렌더링합니다.
+ * 빌드 시 많은 API 호출로 인한 Rate Limit을 방지하기 위해 동적 렌더링을 사용합니다.
+ * 사용자가 페이지를 방문할 때만 API를 호출하여 데이터를 가져옵니다.
  */
-export const revalidate = 86400; // 24시간 (초 단위)
+export const dynamic = 'force-dynamic';
 import { Skeleton } from "@/components/ui/skeleton";
 import StatsSummary, { StatsSummarySkeleton } from "@/components/stats/stats-summary";
 import RegionChartWrapper from "@/components/stats/region-chart-wrapper";
