@@ -365,9 +365,11 @@ export async function removeBookmark(contentId: string): Promise<{
 
 /**
  * 사용자 북마크 목록 조회
- * @returns 북마크된 콘텐츠 ID 배열 (최신순)
+ * @returns 북마크된 콘텐츠 ID와 생성일시 배열 (최신순)
  */
-export async function getUserBookmarks(): Promise<string[]> {
+export async function getUserBookmarks(): Promise<
+  Array<{ content_id: string; created_at: string }>
+> {
   try {
     // Clerk 인증 확인
     const { userId } = await auth();
@@ -381,11 +383,11 @@ export async function getUserBookmarks(): Promise<string[]> {
       return [];
     }
 
-    // 북마크 목록 조회
+    // 북마크 목록 조회 (created_at 포함)
     const supabase = await createClerkSupabaseClient();
     const { data, error } = await supabase
       .from("bookmarks")
-      .select("content_id")
+      .select("content_id, created_at")
       .eq("user_id", supabaseUserId)
       .order("created_at", { ascending: false });
 
@@ -394,10 +396,84 @@ export async function getUserBookmarks(): Promise<string[]> {
       return [];
     }
 
-    return data?.map((item) => item.content_id) || [];
+    return (
+      data?.map((item) => ({
+        content_id: item.content_id,
+        created_at: item.created_at,
+      })) || []
+    );
   } catch (error) {
     console.error("북마크 목록 조회 중 에러:", error);
     return [];
+  }
+}
+
+/**
+ * 북마크 일괄 삭제
+ * @param contentIds 삭제할 콘텐츠 ID 배열
+ * @returns 성공 여부 및 삭제된 개수
+ */
+export async function removeBookmarks(contentIds: string[]): Promise<{
+  success: boolean;
+  error?: string;
+  deletedCount?: number;
+}> {
+  try {
+    // Clerk 인증 확인
+    const { userId } = await auth();
+    if (!userId) {
+      return {
+        success: false,
+        error: "로그인이 필요합니다.",
+      };
+    }
+
+    // 빈 배열 체크
+    if (!contentIds || contentIds.length === 0) {
+      return {
+        success: false,
+        error: "삭제할 북마크를 선택해주세요.",
+      };
+    }
+
+    // Supabase User ID 조회
+    const supabaseUserId = await getSupabaseUserId(userId);
+    if (!supabaseUserId) {
+      return {
+        success: false,
+        error: "사용자 정보를 찾을 수 없습니다.",
+      };
+    }
+
+    // 북마크 일괄 삭제
+    const supabase = await createClerkSupabaseClient();
+    const { data, error } = await supabase
+      .from("bookmarks")
+      .delete()
+      .eq("user_id", supabaseUserId)
+      .in("content_id", contentIds)
+      .select();
+
+    if (error) {
+      console.error("북마크 일괄 삭제 실패:", error);
+      return {
+        success: false,
+        error: "북마크 삭제에 실패했습니다.",
+      };
+    }
+
+    const deletedCount = data?.length || 0;
+
+    return {
+      success: true,
+      deletedCount,
+    };
+  } catch (error) {
+    console.error("북마크 일괄 삭제 중 에러:", error);
+    return {
+      success: false,
+      error: "북마크 삭제 중 오류가 발생했습니다.",
+    };
   }
 }
 

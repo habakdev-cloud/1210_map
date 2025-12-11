@@ -675,34 +675,34 @@
 
 ## Phase 5: 북마크 페이지 (`/bookmarks`) - 선택 사항
 
-- [ ] Supabase 설정 확인
-  - [ ] `bookmarks` 테이블 확인 (db.sql 참고)
-    - [ ] `users` 테이블과의 관계 확인
-    - [ ] 인덱스 확인 (user_id, content_id, created_at)
-    - [ ] RLS 비활성화 확인 (개발 환경)
-- [ ] 북마크 목록 페이지
-  - [ ] `app/bookmarks/page.tsx` 생성
-    - [ ] 인증된 사용자만 접근 가능
-    - [ ] 로그인하지 않은 경우 로그인 유도
-  - [ ] `components/bookmarks/bookmark-list.tsx` 생성
-    - [ ] 사용자 북마크 목록 조회 (`getUserBookmarks()`)
-    - [ ] 카드 레이아웃 (홈페이지와 동일한 tour-card 사용)
-    - [ ] 빈 상태 처리 (북마크 없을 때)
-    - [ ] 로딩 상태 (Skeleton UI)
-- [ ] 북마크 관리 기능
-  - [ ] 정렬 옵션
-    - [ ] 최신순 (created_at DESC)
-    - [ ] 이름순 (가나다순)
-    - [ ] 지역별
-  - [ ] 일괄 삭제 기능
-    - [ ] 체크박스 선택
-    - [ ] 선택 항목 삭제
-    - [ ] 확인 다이얼로그
-  - [ ] 개별 삭제 기능
-    - [ ] 각 카드에 삭제 버튼
-- [ ] 페이지 통합 및 스타일링
-  - [ ] 반응형 디자인 확인
-  - [ ] 최종 페이지 확인
+- [x] Supabase 설정 확인
+  - [x] `bookmarks` 테이블 확인 (db.sql 참고)
+    - [x] `users` 테이블과의 관계 확인
+    - [x] 인덱스 확인 (user_id, content_id, created_at)
+    - [x] RLS 비활성화 확인 (개발 환경)
+- [x] 북마크 목록 페이지
+  - [x] `app/bookmarks/page.tsx` 생성
+    - [x] 인증된 사용자만 접근 가능
+    - [x] 로그인하지 않은 경우 로그인 유도
+  - [x] `components/bookmarks/bookmark-list.tsx` 생성
+    - [x] 사용자 북마크 목록 조회 (`getUserBookmarks()`)
+    - [x] 카드 레이아웃 (홈페이지와 동일한 tour-card 사용)
+    - [x] 빈 상태 처리 (북마크 없을 때)
+    - [x] 로딩 상태 (Skeleton UI)
+- [x] 북마크 관리 기능
+  - [x] 정렬 옵션
+    - [x] 최신순 (created_at DESC)
+    - [x] 이름순 (가나다순)
+    - [x] 지역별
+  - [x] 일괄 삭제 기능
+    - [x] 체크박스 선택
+    - [x] 선택 항목 삭제
+    - [x] 확인 다이얼로그
+  - [x] 개별 삭제 기능
+    - [x] 각 카드에 삭제 버튼
+- [x] 페이지 통합 및 스타일링
+  - [x] 반응형 디자인 확인
+  - [x] 최종 페이지 확인
 
 ## Phase 6: 최적화 & 배포
 
