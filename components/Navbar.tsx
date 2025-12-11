@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Home, BarChart3, Bookmark, Menu, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
+import TourSearch from "@/components/tour-search";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -94,9 +95,9 @@ const Navbar = () => {
 
         {/* 오른쪽 메뉴 */}
         <div className="flex items-center gap-4">
-          {/* 검색창은 Phase 2에서 구현 예정 */}
+          {/* 헤더 검색창 (데스크톱만 표시) */}
           <div className="hidden lg:block">
-            {/* 검색창 placeholder */}
+            <TourSearch size="small" />
           </div>
 
           <div className="flex items-center gap-2">
@@ -127,6 +128,10 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <nav className="md:hidden border-t bg-background">
           <div className="container px-4 py-4 space-y-2">
+            {/* 모바일 검색창 */}
+            <div className="mb-4">
+              <TourSearch size="small" />
+            </div>
             {navLinks.map((link) => {
               const Icon = link.icon;
               return (

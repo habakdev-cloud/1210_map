@@ -20,6 +20,7 @@ import { useState, useEffect } from "react";
 import { List, Map as MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TourList from "@/components/tour-list";
+import TourListInfinite from "@/components/tour-list-infinite";
 import NaverMap from "@/components/naver-map";
 import type { TourItem } from "@/lib/types/tour";
 
@@ -28,6 +29,20 @@ interface TourMapViewProps {
   tours: TourItem[];
   /** 에러 상태 */
   error?: Error | null;
+  /** 검색 키워드 (검색 모드일 때) */
+  searchKeyword?: string;
+  /** 선택된 관광지 ID */
+  selectedTourId?: string;
+  /** 관광지 클릭 핸들러 */
+  onTourClick?: (tourId: string) => void;
+  /** 다음 페이지 로드 함수 (무한 스크롤용) */
+  loadMore?: () => Promise<void>;
+  /** 더 불러올 데이터가 있는지 (무한 스크롤용) */
+  hasMore?: boolean;
+  /** 로딩 중인지 (무한 스크롤용) */
+  isLoading?: boolean;
+  /** 재시도 함수 */
+  onRetry?: () => void;
 }
 
 type ViewMode = "list" | "map" | "split";
@@ -35,11 +50,24 @@ type ViewMode = "list" | "map" | "split";
 /**
  * 관광지 목록 및 지도 통합 뷰 컴포넌트
  */
-export default function TourMapView({ tours, error }: TourMapViewProps) {
-  const [selectedTourId, setSelectedTourId] = useState<string | undefined>();
+export default function TourMapView({
+  tours,
+  error,
+  searchKeyword,
+  selectedTourId: externalSelectedTourId,
+  onTourClick: externalOnTourClick,
+  loadMore,
+  hasMore = false,
+  isLoading = false,
+  onRetry,
+}: TourMapViewProps) {
+  const [internalSelectedTourId, setInternalSelectedTourId] = useState<string | undefined>();
   const [viewMode, setViewMode] = useState<ViewMode>("split");
   const [mapType, setMapType] = useState<"normal" | "satellite">("normal");
   const [isMobile, setIsMobile] = useState(false);
+
+  // 외부에서 전달된 selectedTourId 우선 사용
+  const selectedTourId = externalSelectedTourId ?? internalSelectedTourId;
 
   // 화면 크기 감지 및 기본 뷰 모드 설정
   useEffect(() => {
@@ -59,7 +87,11 @@ export default function TourMapView({ tours, error }: TourMapViewProps) {
 
   // 마커 클릭 핸들러
   const handleMarkerClick = (tourId: string) => {
-    setSelectedTourId(tourId);
+    if (externalOnTourClick) {
+      externalOnTourClick(tourId);
+    } else {
+      setInternalSelectedTourId(tourId);
+    }
     // 모바일에서 지도 뷰로 전환
     if (window.innerWidth < 1024 && viewMode === "list") {
       setViewMode("map");
@@ -68,8 +100,11 @@ export default function TourMapView({ tours, error }: TourMapViewProps) {
 
   // 카드 클릭 핸들러 (TourList에서 사용)
   const handleTourClick = (tourId: string) => {
-    console.log("카드 클릭:", tourId);
-    setSelectedTourId(tourId);
+    if (externalOnTourClick) {
+      externalOnTourClick(tourId);
+    } else {
+      setInternalSelectedTourId(tourId);
+    }
     // 모바일에서 지도 뷰로 전환
     if (typeof window !== "undefined" && window.innerWidth < 1024 && viewMode === "list") {
       setViewMode("map");
@@ -126,12 +161,29 @@ export default function TourMapView({ tours, error }: TourMapViewProps) {
               isMobile && viewMode === "map" ? "hidden" : ""
             } ${viewMode === "split" ? "lg:overflow-y-auto lg:max-h-[600px]" : ""}`}
           >
-            <TourList
-              tours={tours}
-              error={error}
-              selectedTourId={selectedTourId}
-              onTourClick={handleTourClick}
-            />
+            {loadMore && hasMore !== undefined ? (
+              // 무한 스크롤 모드
+              <TourListInfinite
+                initialTours={tours}
+                loadMore={loadMore}
+                hasMore={hasMore}
+                isLoading={isLoading}
+                error={error}
+                onRetry={onRetry}
+                selectedTourId={selectedTourId}
+                onTourClick={handleTourClick}
+                searchKeyword={searchKeyword}
+              />
+            ) : (
+              // 일반 모드
+              <TourList
+                tours={tours}
+                error={error}
+                selectedTourId={selectedTourId}
+                onTourClick={handleTourClick}
+                searchKeyword={searchKeyword}
+              />
+            )}
           </div>
         )}
 

@@ -215,6 +215,30 @@ export type AreaCodeResponse = ApiResponse<AreaCode>;
 export type AreaBasedListResponse = ApiResponse<TourItem>;
 
 /**
+ * 페이지네이션 메타데이터
+ */
+export interface PaginationMetadata {
+  /** 현재 페이지 번호 */
+  pageNo: number;
+  /** 페이지당 항목 수 */
+  numOfRows: number;
+  /** 전체 결과 수 */
+  totalCount: number;
+  /** 전체 페이지 수 */
+  totalPages: number;
+}
+
+/**
+ * 페이지네이션 응답
+ */
+export interface PaginationResponse<T> {
+  /** 항목 목록 */
+  items: T[];
+  /** 페이지네이션 메타데이터 */
+  pagination: PaginationMetadata;
+}
+
+/**
  * 키워드 검색 응답
  */
 export type SearchKeywordResponse = ApiResponse<TourItem>;

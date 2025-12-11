@@ -17,8 +17,13 @@
 
 import Footer from "@/components/Footer";
 import TourFilters from "@/components/tour-filters";
-import TourMapView from "@/components/tour-map-view";
-import { getAreaBasedList, getAreaCode } from "@/lib/api/tour-api";
+import TourListContainer from "@/components/tour-list-container";
+import TourSearch from "@/components/tour-search";
+import {
+  getAreaBasedListWithPagination,
+  searchKeywordWithPagination,
+  getAreaCode,
+} from "@/lib/api/tour-api";
 import type { TourItem } from "@/lib/types/tour";
 
 interface HomeProps {
@@ -27,6 +32,7 @@ interface HomeProps {
     contentTypeId?: string;
     sort?: string;
     pageNo?: string;
+    keyword?: string;
   }>;
 }
 
@@ -62,6 +68,7 @@ export default async function Home({ searchParams }: HomeProps) {
   const contentTypeId = params.contentTypeId || undefined;
   const sort = params.sort || "latest";
   const pageNo = parseInt(params.pageNo || "1", 10);
+  const keyword = params.keyword || undefined;
 
   // 지역 코드 목록 조회 (시/도만)
   let areaCodes: Awaited<ReturnType<typeof getAreaCode>> = [];
@@ -71,22 +78,46 @@ export default async function Home({ searchParams }: HomeProps) {
     console.error("지역코드 조회 실패:", err);
   }
 
-  // 관광지 목록 조회
+  // 관광지 목록 조회 (검색 또는 필터 기반)
   let tours: TourItem[] = [];
+  let pagination = {
+    pageNo: 1,
+    numOfRows: 20,
+    totalCount: 0,
+    totalPages: 0,
+  };
   let error: Error | null = null;
+  let isSearchMode = false;
 
   try {
-    tours = await getAreaBasedList({
-      areaCode,
-      contentTypeId,
-      numOfRows: 20, // PRD.md: 10-20개
-      pageNo,
-    });
+    if (keyword && keyword.trim().length > 0) {
+      // 검색 모드: 키워드 검색 + 필터 조합
+      isSearchMode = true;
+      const result = await searchKeywordWithPagination({
+        keyword: keyword.trim(),
+        areaCode,
+        contentTypeId,
+        numOfRows: 20,
+        pageNo,
+      });
+      tours = result.items;
+      pagination = result.pagination;
+    } else {
+      // 일반 모드: 지역/타입 필터만
+      const result = await getAreaBasedListWithPagination({
+        areaCode,
+        contentTypeId,
+        numOfRows: 20, // PRD.md: 10-20개
+        pageNo,
+      });
+      tours = result.items;
+      pagination = result.pagination;
+    }
 
     // 정렬 적용 (API가 정렬을 지원하지 않으므로 클라이언트 사이드 정렬)
     tours = sortTours(tours, sort);
   } catch (err) {
-    console.error("관광지 목록 조회 실패:", err);
+    console.error(isSearchMode ? "검색 실패:" : "관광지 목록 조회 실패:", err);
     error = err instanceof Error ? err : new Error(String(err));
   }
 
@@ -95,7 +126,7 @@ export default async function Home({ searchParams }: HomeProps) {
       {/* Hero Section */}
       <section className="w-full py-12 md:py-16">
         <div className="container max-w-7xl mx-auto px-4">
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-6">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground">
               한국의 아름다운 관광지를 탐험하세요
             </h1>
@@ -103,6 +134,10 @@ export default async function Home({ searchParams }: HomeProps) {
               전국 각지의 관광지 정보를 검색하고, 지도에서 위치를 확인하며,
               상세 정보를 알아보세요.
             </p>
+            {/* 메인 검색창 */}
+            <div className="pt-4">
+              <TourSearch size="large" initialKeyword={params.keyword} />
+            </div>
           </div>
         </div>
       </section>
@@ -113,8 +148,23 @@ export default async function Home({ searchParams }: HomeProps) {
       {/* Main Content Area */}
       <main className="flex-1 container max-w-7xl mx-auto px-4 pb-8">
         <div className="space-y-8">
-          {/* 관광지 목록 및 지도 */}
-          <TourMapView tours={tours} error={error} />
+          {/* 검색 결과 개수 표시 */}
+          {keyword && (
+            <div className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">"{keyword}"</span> 검색 결과:{" "}
+              <span className="font-medium text-foreground">{tours.length}개</span>
+            </div>
+          )}
+          {/* 관광지 목록 및 지도 (무한 스크롤) */}
+          <TourListContainer
+            initialTours={tours}
+            initialPagination={pagination}
+            initialError={error}
+            searchKeyword={keyword}
+            areaCode={areaCode}
+            contentTypeId={contentTypeId}
+            sort={sort}
+          />
         </div>
       </main>
 

@@ -37,6 +37,8 @@ interface TourListProps {
   selectedTourId?: string;
   /** 관광지 클릭 핸들러 */
   onTourClick?: (tourId: string) => void;
+  /** 검색 키워드 (검색 모드일 때) */
+  searchKeyword?: string;
 }
 
 /**
@@ -67,6 +69,7 @@ export default function TourList({
   onRetry,
   selectedTourId,
   onTourClick,
+  searchKeyword,
 }: TourListProps) {
   // 에러 상태
   if (error) {
@@ -96,10 +99,18 @@ export default function TourList({
       <div className="flex flex-col items-center justify-center min-h-[400px] rounded-lg border border-dashed border-border p-12">
         <MapPin className="w-16 h-16 text-muted-foreground/50 mb-4" />
         <h3 className="text-lg font-semibold text-foreground mb-2">
-          관광지가 없습니다
+          {searchKeyword ? "검색 결과가 없습니다" : "관광지가 없습니다"}
         </h3>
         <p className="text-sm text-muted-foreground text-center">
-          다른 필터 옵션을 선택하거나 검색어를 변경해보세요.
+          {searchKeyword ? (
+            <>
+              <span className="font-medium">"{searchKeyword}"</span>에 대한 검색 결과가 없습니다.
+              <br />
+              다른 검색어를 시도하거나 필터 옵션을 변경해보세요.
+            </>
+          ) : (
+            "다른 필터 옵션을 선택하거나 검색어를 변경해보세요."
+          )}
         </p>
       </div>
     );

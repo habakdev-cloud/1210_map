@@ -31,6 +31,8 @@ import type {
   TourImage,
   PetTourInfo,
   TourItem,
+  PaginationResponse,
+  PaginationMetadata,
 } from "@/lib/types/tour";
 
 /**
@@ -257,6 +259,87 @@ export async function getAreaBasedList(params: {
 }
 
 /**
+ * 지역 기반 관광지 목록 조회 (페이지네이션 메타데이터 포함)
+ *
+ * @param params - 조회 파라미터
+ * @param params.areaCode - 지역 코드 (옵션)
+ * @param params.contentTypeId - 콘텐츠 타입 ID (옵션)
+ * @param params.numOfRows - 페이지당 항목 수 (기본값: 10)
+ * @param params.pageNo - 페이지 번호 (기본값: 1)
+ * @returns 페이지네이션 메타데이터를 포함한 관광지 목록
+ *
+ * @example
+ * ```ts
+ * const result = await getAreaBasedListWithPagination({ areaCode: "1" });
+ * console.log(result.items); // TourItem[]
+ * console.log(result.pagination.totalCount); // 전체 개수
+ * ```
+ */
+export async function getAreaBasedListWithPagination(params: {
+  areaCode?: string;
+  contentTypeId?: string;
+  numOfRows?: number;
+  pageNo?: number;
+}): Promise<PaginationResponse<TourItem>> {
+  try {
+    const {
+      areaCode,
+      contentTypeId,
+      numOfRows = 10,
+      pageNo = 1,
+    } = params;
+
+    const url = buildApiUrl("/areaBasedList2", {
+      areaCode,
+      contentTypeId,
+      numOfRows,
+      pageNo,
+    });
+
+    const response = await fetchWithRetry<AreaBasedListResponse>(url);
+    
+    if (!response || !("response" in response) || !response.response?.body) {
+      throw new Error("API 응답 구조가 올바르지 않습니다");
+    }
+
+    const items = response.response.body.items?.item;
+    if (!items) {
+      return {
+        items: [],
+        pagination: {
+          pageNo,
+          numOfRows,
+          totalCount: 0,
+          totalPages: 0,
+        },
+      };
+    }
+
+    const normalizedItems = normalizeItems(items);
+    
+    // 페이지네이션 메타데이터 추출
+    const body = response.response.body;
+    const totalCount = body.totalCount || 0;
+    const currentPageNo = body.pageNo || pageNo;
+    const currentNumOfRows = body.numOfRows || numOfRows;
+    const totalPages = currentNumOfRows > 0 ? Math.ceil(totalCount / currentNumOfRows) : 0;
+
+    return {
+      items: normalizedItems,
+      pagination: {
+        pageNo: currentPageNo,
+        numOfRows: currentNumOfRows,
+        totalCount,
+        totalPages,
+      },
+    };
+  } catch (error) {
+    console.error("지역 기반 목록 조회 실패:", error);
+    throw error;
+  }
+}
+
+/**
  * 키워드 검색
  *
  * @param params - 검색 파라미터
@@ -297,6 +380,82 @@ export async function searchKeyword(params: {
 
     const response = await fetchWithRetry<SearchKeywordResponse>(url);
     return normalizeItems(response.response.body.items?.item);
+  } catch (error) {
+    console.error("키워드 검색 실패:", error);
+    throw error;
+  }
+}
+
+/**
+ * 키워드 검색 (페이지네이션 메타데이터 포함)
+ *
+ * @param params - 검색 파라미터
+ * @param params.keyword - 검색 키워드 (필수)
+ * @param params.areaCode - 지역 코드 (옵션)
+ * @param params.contentTypeId - 콘텐츠 타입 ID (옵션)
+ * @param params.numOfRows - 페이지당 항목 수 (기본값: 10)
+ * @param params.pageNo - 페이지 번호 (기본값: 1)
+ * @returns 페이지네이션 메타데이터를 포함한 검색 결과
+ */
+export async function searchKeywordWithPagination(params: {
+  keyword: string;
+  areaCode?: string;
+  contentTypeId?: string;
+  numOfRows?: number;
+  pageNo?: number;
+}): Promise<PaginationResponse<TourItem>> {
+  try {
+    const { keyword, areaCode, contentTypeId, numOfRows = 10, pageNo = 1 } = params;
+
+    if (!keyword || keyword.trim().length === 0) {
+      throw new Error("검색 키워드는 필수입니다.");
+    }
+
+    const url = buildApiUrl("/searchKeyword2", {
+      keyword: keyword.trim(),
+      areaCode,
+      contentTypeId,
+      numOfRows,
+      pageNo,
+    });
+
+    const response = await fetchWithRetry<SearchKeywordResponse>(url);
+    
+    if (!response || !("response" in response) || !response.response?.body) {
+      throw new Error("API 응답 구조가 올바르지 않습니다");
+    }
+
+    const items = response.response.body.items?.item;
+    if (!items) {
+      return {
+        items: [],
+        pagination: {
+          pageNo,
+          numOfRows,
+          totalCount: 0,
+          totalPages: 0,
+        },
+      };
+    }
+
+    const normalizedItems = normalizeItems(items);
+    
+    // 페이지네이션 메타데이터 추출
+    const body = response.response.body;
+    const totalCount = body.totalCount || 0;
+    const currentPageNo = body.pageNo || pageNo;
+    const currentNumOfRows = body.numOfRows || numOfRows;
+    const totalPages = currentNumOfRows > 0 ? Math.ceil(totalCount / currentNumOfRows) : 0;
+
+    return {
+      items: normalizedItems,
+      pagination: {
+        pageNo: currentPageNo,
+        numOfRows: currentNumOfRows,
+        totalCount,
+        totalPages,
+      },
+    };
   } catch (error) {
     console.error("키워드 검색 실패:", error);
     throw error;
@@ -408,8 +567,6 @@ export async function getDetailIntro(params: {
  *
  * @param params - 조회 파라미터
  * @param params.contentId - 콘텐츠 ID (필수)
- * @param params.imageYN - 원본 이미지 포함 여부 (기본값: Y)
- * @param params.subImageYN - 서브 이미지 포함 여부 (기본값: Y)
  * @returns 이미지 목록
  *
  * @example
@@ -419,20 +576,18 @@ export async function getDetailIntro(params: {
  */
 export async function getDetailImage(params: {
   contentId: string;
-  imageYN?: "Y" | "N";
-  subImageYN?: "Y" | "N";
 }): Promise<TourImage[]> {
   try {
-    const { contentId, imageYN = "Y", subImageYN = "Y" } = params;
+    const { contentId } = params;
 
     if (!contentId) {
       throw new Error("콘텐츠 ID는 필수입니다.");
     }
 
+    // detailImage2는 contentId만 필수 파라미터
+    // imageYN, subImageYN 파라미터는 API에서 지원하지 않거나 오류를 발생시킴
     const url = buildApiUrl("/detailImage2", {
       contentId,
-      imageYN,
-      subImageYN,
     });
 
     const response = await fetchWithRetry<DetailImageResponse>(url);

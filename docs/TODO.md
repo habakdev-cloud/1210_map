@@ -279,21 +279,21 @@
   - [x] 오류 수정
     - [x] Select.Item 빈 문자열 오류 해결 ("all" 값 사용)
     - [x] TourCard hydration 오류 해결 (`suppressHydrationWarning` 추가)
-- [ ] 검색 기능 (MVP 2.3)
-  - [ ] `components/tour-search.tsx` 생성
-    - [ ] 검색창 UI (헤더 또는 메인 영역)
-    - [ ] 검색 아이콘
-    - [ ] 엔터 또는 버튼 클릭으로 검색
-    - [ ] 검색 중 로딩 스피너
-  - [ ] 검색 API 연동
-    - [ ] `searchKeyword()` 호출
-    - [ ] 검색 결과 표시
-    - [ ] 검색 결과 개수 표시
-    - [ ] 결과 없음 메시지
-  - [ ] 검색 + 필터 조합
-    - [ ] 키워드 + 지역 필터
-    - [ ] 키워드 + 타입 필터
-    - [ ] 모든 필터 동시 적용
+- [x] 검색 기능 (MVP 2.3)
+  - [x] `components/tour-search.tsx` 생성
+    - [x] 검색창 UI (헤더 또는 메인 영역)
+    - [x] 검색 아이콘
+    - [x] 엔터 또는 버튼 클릭으로 검색
+    - [x] 검색 중 로딩 스피너
+  - [x] 검색 API 연동
+    - [x] `searchKeyword()` 호출
+    - [x] 검색 결과 표시
+    - [x] 검색 결과 개수 표시
+    - [x] 결과 없음 메시지
+  - [x] 검색 + 필터 조합
+    - [x] 키워드 + 지역 필터
+    - [x] 키워드 + 타입 필터
+    - [x] 모든 필터 동시 적용
 - [x] 네이버 지도 연동 (MVP 2.2)
   - [x] `components/naver-map.tsx` 생성
     - [x] Naver Maps API v3 초기화
@@ -353,17 +353,94 @@
   - [x] 접근성 개선 (ARIA 라벨 추가)
 - [x] `app/page.tsx` 지도 통합
   - [x] TourMapView 컴포넌트 사용하여 목록과 지도 통합 표시
-- [ ] 페이지네이션
-  - [ ] 무한 스크롤 구현
-    - [ ] Intersection Observer 사용
-    - [ ] 하단 로딩 인디케이터
-    - [ ] 페이지당 10-20개 항목
+- [x] 페이지네이션
+  - [x] 무한 스크롤 구현
+    - [x] Intersection Observer 사용
+    - [x] 하단 로딩 인디케이터
+    - [x] 페이지당 10-20개 항목
   - [ ] 또는 페이지 번호 선택 방식
-- [ ] 최종 통합 및 스타일링
-  - [ ] 모든 기능 통합 테스트
-  - [ ] 반응형 디자인 확인 (모바일/태블릿/데스크톱)
-  - [ ] 로딩 상태 개선
-  - [ ] 에러 처리 개선
+- [x] 최종 통합 및 스타일링
+  - [x] 모든 기능 통합 테스트
+  - [x] 반응형 디자인 확인 (모바일/태블릿/데스크톱)
+  - [x] 로딩 상태 개선
+  - [x] 에러 처리 개선
+
+---
+
+### 추가 개발
+
+- [x] 검색 기능 상세 구현
+  - [x] `components/tour-search.tsx` 생성
+    - [x] Client Component로 구현 (`"use client"`)
+    - [x] 검색창 UI (Input + 검색 아이콘 버튼)
+    - [x] 엔터 키 또는 버튼 클릭으로 검색 실행
+    - [x] 검색 중 로딩 스피너 표시
+    - [x] 검색어 입력 상태 관리
+    - [x] URL 쿼리 파라미터와 동기화 (`keyword` 파라미터)
+    - [x] 검색어 초기화 기능 (X 버튼)
+    - [x] 크기 변형 지원 (small: 헤더용, large: 메인 영역용)
+    - [x] shadcn/ui Input 컴포넌트 사용
+    - [x] lucide-react Search 아이콘 사용
+  - [x] `components/Navbar.tsx`에 헤더 검색창 통합
+    - [x] 데스크톱: 헤더 우측에 작은 검색창 배치
+    - [x] 모바일: 햄버거 메뉴에 검색창 포함
+    - [x] 검색어 입력 시 URL 업데이트 (`?keyword=검색어`)
+  - [x] `app/page.tsx`에 메인 영역 검색창 추가
+    - [x] Hero Section 아래에 큰 검색창 배치
+    - [x] DESIGN.md 디자인 시스템 반영 (rounded-full, shadow-lg)
+    - [x] 검색어가 있을 때 검색 결과 개수 표시
+  - [x] 검색 API 연동
+    - [x] `app/page.tsx`에서 `searchParams`의 `keyword` 파라미터 읽기
+    - [x] `keyword`가 있으면 `searchKeyword()` API 호출
+    - [x] `keyword`가 없으면 기존 `getAreaBasedList()` 사용
+    - [x] 검색 + 필터 조합 지원:
+      - [x] 키워드 + 지역 필터 (`searchKeyword({ keyword, areaCode })`)
+      - [x] 키워드 + 타입 필터 (`searchKeyword({ keyword, contentTypeId })`)
+      - [x] 모든 필터 동시 적용
+  - [x] 검색 결과 표시 개선
+    - [x] 검색 결과 개수 표시 (예: "검색어" 검색 결과: 15개)
+    - [x] 검색 결과 없음 메시지 개선 (검색어 포함)
+    - [x] `components/tour-list.tsx`에 `searchKeyword` prop 추가
+    - [x] `components/tour-map-view.tsx`에 `searchKeyword` prop 전달
+- [x] 무한 스크롤 페이지네이션 상세 구현
+  - [x] `hooks/use-infinite-scroll.ts` 생성
+    - [x] Intersection Observer API 사용
+    - [x] 하단 감지 요소 (sentinel) 감시
+    - [x] 다음 페이지 로드 트리거
+    - [x] 로딩 상태 관리
+    - [x] 에러 상태 관리
+    - [x] 페이지 번호 추적
+    - [x] rootMargin 설정 (기본값: "100px")
+  - [x] API 응답 타입 확장
+    - [x] `lib/types/tour.ts`에 `PaginationMetadata`, `PaginationResponse` 타입 추가
+    - [x] `lib/api/tour-api.ts`에 페이지네이션 메타데이터 반환 함수 추가:
+      - [x] `getAreaBasedListWithPagination()` - 지역 기반 목록 (페이지네이션 메타데이터 포함)
+      - [x] `searchKeywordWithPagination()` - 키워드 검색 (페이지네이션 메타데이터 포함)
+    - [x] 기존 함수 유지 (하위 호환성)
+  - [x] `components/tour-list-infinite.tsx` 생성
+    - [x] 무한 스크롤 UI 컴포넌트
+    - [x] 하단 감지 요소 (sentinel) 배치
+    - [x] 로딩 인디케이터 (하단 스피너)
+    - [x] "더 이상 데이터가 없습니다" 메시지
+    - [x] Intersection Observer 연결
+    - [x] 기존 TourList 컴포넌트 재사용
+  - [x] `components/tour-list-container.tsx` 생성
+    - [x] 무한 스크롤 로직 처리 Client Component
+    - [x] 초기 데이터 표시
+    - [x] 무한 스크롤로 추가 페이지 로드
+    - [x] 누적된 관광지 목록 관리 (이전 페이지 + 새 페이지)
+    - [x] 필터/검색 변경 시 페이지 리셋
+    - [x] 정렬 기능 통합 (클라이언트 사이드 정렬)
+    - [x] 에러 처리 및 재시도 기능
+  - [x] `app/page.tsx`에 무한 스크롤 통합
+    - [x] 페이지네이션 메타데이터를 사용하여 초기 데이터 로드
+    - [x] `getAreaBasedListWithPagination()` 또는 `searchKeywordWithPagination()` 사용
+    - [x] TourListContainer 컴포넌트 사용
+  - [x] `components/tour-map-view.tsx`에 무한 스크롤 통합
+    - [x] 무한 스크롤 props 추가 (`loadMore`, `hasMore`, `isLoading`, `onRetry`)
+    - [x] TourListInfinite 컴포넌트 조건부 렌더링
+    - [x] 새 페이지 로드 시 지도 마커 자동 업데이트 (tours prop 변경 시)
+    - [x] 선택된 관광지 상태 관리 개선
 
 ## Phase 3: 상세페이지 (`/places/[contentId]`)
 
@@ -452,72 +529,84 @@
   - [x] 운영 정보 조회 실패 시에도 기본 정보는 표시 (선택적 섹션)
   - [x] DetailIntro 컴포넌트를 DetailInfo 아래에 배치
   - [x] 에러 처리 (운영 정보 없어도 기본 정보는 표시)
-- [ ] 이미지 갤러리 (MVP 2.4.3)
-  - [ ] `components/tour-detail/detail-gallery.tsx` 생성
-    - [ ] `getDetailImage()` API 연동
-    - [ ] 대표 이미지 + 서브 이미지들
-    - [ ] 이미지 슬라이드 기능 (Swiper 또는 캐러셀)
-    - [ ] 이미지 클릭 시 전체화면 모달
-    - [ ] 이미지 없으면 기본 이미지
-    - [ ] Next.js Image 컴포넌트 사용 (최적화)
-- [ ] 지도 섹션 (MVP 2.4.4)
-  - [ ] `components/tour-detail/detail-map.tsx` 생성
-    - [ ] 해당 관광지 위치 표시
-    - [ ] 마커 1개 표시
-    - [ ] "길찾기" 버튼
-      - [ ] 네이버 지도 앱/웹 연동
-      - [ ] URL: `https://map.naver.com/v5/directions/{좌표}`
-    - [ ] 좌표 정보 표시 (선택 사항)
-- [ ] 공유 기능 (MVP 2.4.5)
-  - [ ] `components/tour-detail/share-button.tsx` 생성
-    - [ ] URL 복사 기능
-      - [ ] `navigator.clipboard.writeText()` 사용
-      - [ ] HTTPS 환경 확인
-    - [ ] 복사 완료 토스트 메시지
-    - [ ] 공유 아이콘 버튼 (Share/Link 아이콘)
-  - [ ] Open Graph 메타태그
-    - [ ] `app/places/[contentId]/page.tsx`에 Metadata 생성
-    - [ ] `og:title` - 관광지명
-    - [ ] `og:description` - 관광지 설명 (100자 이내)
-    - [ ] `og:image` - 대표 이미지 (1200x630 권장)
-    - [ ] `og:url` - 상세페이지 URL
-    - [ ] `og:type` - "website"
-- [ ] 북마크 기능 (MVP 2.4.5)
-  - [ ] `components/bookmarks/bookmark-button.tsx` 생성
-    - [ ] 별 아이콘 (채워짐/비어있음)
-    - [ ] 북마크 상태 확인 (Supabase 조회)
-    - [ ] 북마크 추가/제거 기능
-    - [ ] 인증된 사용자 확인 (Clerk)
-    - [ ] 로그인하지 않은 경우: 로그인 유도 또는 localStorage 임시 저장
-  - [ ] Supabase 연동
-    - [ ] `lib/api/supabase-api.ts` 생성
-      - [ ] `getBookmark()` - 북마크 조회
-      - [ ] `addBookmark()` - 북마크 추가
-      - [ ] `removeBookmark()` - 북마크 제거
-      - [ ] `getUserBookmarks()` - 사용자 북마크 목록
-    - [ ] `bookmarks` 테이블 사용 (db.sql 참고)
-      - [ ] `user_id` (users 테이블 참조)
-      - [ ] `content_id` (한국관광공사 API contentid)
-      - [ ] UNIQUE 제약 (user_id, content_id)
-  - [ ] 상세페이지에 북마크 버튼 추가
-- [ ] 반려동물 정보 섹션 (MVP 2.5)
-  - [ ] `components/tour-detail/detail-pet-tour.tsx` 생성
-    - [ ] `getDetailPetTour()` API 연동
-    - [ ] 반려동물 동반 가능 여부 표시
-    - [ ] 반려동물 크기 제한 정보
-    - [ ] 반려동물 입장 가능 장소 (실내/실외)
-    - [ ] 반려동물 동반 추가 요금
-    - [ ] 반려동물 전용 시설 정보
-    - [ ] 아이콘 및 뱃지 디자인 (🐾)
-    - [ ] 주의사항 강조 표시
-- [ ] 추천 관광지 섹션 (선택 사항)
-  - [ ] 같은 지역 또는 타입의 다른 관광지 추천
-  - [ ] 카드 형태로 표시
-- [ ] 최종 통합 및 스타일링
-  - [ ] 모든 섹션 통합
-  - [ ] 반응형 디자인 확인
-  - [ ] 모바일 최적화
-  - [ ] 접근성 확인 (ARIA 라벨, 키보드 네비게이션)
+- [x] 이미지 갤러리 (MVP 2.4.3)
+  - [x] `components/tour-detail/detail-gallery.tsx` 생성
+    - [x] `getDetailImage()` API 연동
+    - [x] 대표 이미지 + 서브 이미지들
+    - [x] 이미지 슬라이드 기능 (Swiper 또는 캐러셀)
+    - [x] 이미지 클릭 시 전체화면 모달
+    - [x] 이미지 없으면 기본 이미지
+    - [x] Next.js Image 컴포넌트 사용 (최적화)
+- [x] 지도 섹션 (MVP 2.4.4)
+
+  - [x] `components/tour-detail/detail-map.tsx` 생성
+    - [x] 해당 관광지 위치 표시
+    - [x] 마커 1개 표시
+    - [x] "길찾기" 버튼
+      - [x] 네이버 지도 앱/웹 연동
+      - [x] URL: `https://map.naver.com/v5/directions/{좌표}`
+    - [x] 좌표 정보 표시 (선택 사항)
+
+- [x] 공유 기능 (MVP 2.4.5)
+  - [x] `components/tour-detail/share-button.tsx` 생성
+    - [x] URL 복사 기능
+      - [x] `navigator.clipboard.writeText()` 사용
+      - [x] HTTPS 환경 확인
+    - [x] 복사 완료 토스트 메시지
+    - [x] 공유 아이콘 버튼 (Share/Link 아이콘)
+  - [x] Open Graph 메타태그
+    - [x] `app/places/[contentId]/page.tsx`에 Metadata 생성
+    - [x] `og:title` - 관광지명
+    - [x] `og:description` - 관광지 설명 (100자 이내)
+    - [x] `og:image` - 대표 이미지 (1200x630 권장)
+    - [x] `og:url` - 상세페이지 URL
+    - [x] `og:type` - "website"
+- [x] 북마크 기능 (MVP 2.4.5)
+  - [x] `components/bookmarks/bookmark-button.tsx` 생성
+    - [x] 별 아이콘 (채워짐/비어있음)
+    - [x] 북마크 상태 확인 (Supabase 조회)
+    - [x] 북마크 추가/제거 기능
+    - [x] 인증된 사용자 확인 (Clerk)
+    - [x] 로그인하지 않은 경우: 로그인 유도 또는 localStorage 임시 저장
+  - [x] Supabase 연동
+    - [x] `lib/api/supabase-api.ts` 생성
+      - [x] `getBookmark()` - 북마크 조회
+      - [x] `addBookmark()` - 북마크 추가
+      - [x] `removeBookmark()` - 북마크 제거
+      - [x] `getUserBookmarks()` - 사용자 북마크 목록
+    - [x] `bookmarks` 테이블 사용 (db.sql 참고)
+      - [x] `user_id` (users 테이블 참조)
+      - [x] `content_id` (한국관광공사 API contentid)
+      - [x] UNIQUE 제약 (user_id, content_id)
+  - [x] 상세페이지에 북마크 버튼 추가
+- [x] 반려동물 정보 섹션 (MVP 2.5)
+  - [x] `components/tour-detail/detail-pet-tour.tsx` 생성
+    - [x] `getDetailPetTour()` API 연동
+    - [x] 반려동물 동반 가능 여부 표시
+    - [x] 반려동물 크기 제한 정보
+    - [x] 반려동물 입장 가능 장소 (실내/실외)
+    - [x] 반려동물 동반 추가 요금
+    - [x] 반려동물 전용 시설 정보
+    - [x] 아이콘 및 뱃지 디자인 (🐾)
+    - [x] 주의사항 강조 표시
+  - [x] `app/places/[contentId]/page.tsx`에 반려동물 정보 섹션 통합
+    - [x] `getDetailPetTour()` API 호출 추가 (선택적, 에러 무시)
+    - [x] DetailPetTour 컴포넌트를 DetailMap 아래에 배치
+- [x] 추천 관광지 섹션 (선택 사항)
+  - [x] `components/tour-detail/detail-recommendations.tsx` 생성
+    - [x] 같은 타입의 다른 관광지 추천
+    - [x] 현재 관광지 제외
+    - [x] 최대 6개 추천 (카드 형태)
+    - [x] 기존 TourCard 컴포넌트 재사용
+    - [x] 로딩 상태 (Skeleton UI)
+    - [x] 빈 상태 처리
+  - [x] `app/places/[contentId]/page.tsx`에 추천 관광지 섹션 통합
+    - [x] DetailRecommendations 컴포넌트를 페이지 하단에 배치
+- [x] 최종 통합 및 스타일링
+  - [x] 모든 섹션 통합 (DetailInfo → DetailIntro → DetailGallery → DetailMap → DetailPetTour → DetailRecommendations)
+  - [x] 반응형 디자인 확인 (모든 섹션 `container max-w-7xl mx-auto px-4 py-8` 스타일 적용)
+  - [x] 모바일 최적화 (그리드 레이아웃: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`)
+  - [x] 접근성 확인 (ARIA 라벨, 키보드 네비게이션)
 
 ## Phase 4: 통계 대시보드 페이지 (`/stats`)
 

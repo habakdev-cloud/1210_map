@@ -27,6 +27,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import type { TourDetail } from "@/lib/types/tour";
 import { CONTENT_TYPE } from "@/lib/types/tour";
+import ShareButton from "@/components/tour-detail/share-button";
+import BookmarkButton from "@/components/bookmarks/bookmark-button";
 
 /**
  * Content Type ID를 한글 이름으로 변환
@@ -194,9 +196,17 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
         )}
       </figure>
 
-      {/* 제목 및 뱃지 */}
+      {/* 제목 및 액션 버튼 */}
       <div className="space-y-4">
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground">{detail.title}</h1>
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground flex-1">
+            {detail.title}
+          </h1>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <BookmarkButton contentId={detail.contentid} size="default" variant="outline" />
+            <ShareButton size="default" variant="outline" />
+          </div>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary">
             {contentTypeName}
