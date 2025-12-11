@@ -25,10 +25,61 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 // Naver Maps API 타입 정의
+type NaverMap = any;
+type NaverMarker = any;
+type NaverInfoWindow = any;
+
 declare global {
   interface Window {
-    naver: typeof naver;
+    naver: {
+      maps: {
+        LatLng: new (lat: number, lng: number) => any;
+        Map: new (element: HTMLElement, options: any) => NaverMap;
+        Marker: new (options: any) => NaverMarker;
+        InfoWindow: new (options: any) => NaverInfoWindow;
+        Point: new (x: number, y: number) => any;
+        Event: {
+          addListener: (
+            target: any,
+            event: string,
+            handler: () => void,
+          ) => void;
+          removeListener: (
+            target: any,
+            event: string,
+            handler: () => void,
+          ) => void;
+        };
+        MapTypeId: {
+          NORMAL: string;
+          SATELLITE: string;
+        };
+      };
+    };
   }
+
+  // 전역 naver 변수 선언
+  const naver: {
+    maps: {
+      LatLng: new (lat: number, lng: number) => any;
+      Map: new (element: HTMLElement, options: any) => NaverMap;
+      Marker: new (options: any) => NaverMarker;
+      InfoWindow: new (options: any) => NaverInfoWindow;
+      Point: new (x: number, y: number) => any;
+      Event: {
+        addListener: (target: any, event: string, handler: () => void) => void;
+        removeListener: (
+          target: any,
+          event: string,
+          handler: () => void,
+        ) => void;
+      };
+      MapTypeId: {
+        NORMAL: string;
+        SATELLITE: string;
+      };
+    };
+  };
 }
 
 interface DetailMapProps {
@@ -40,9 +91,9 @@ interface DetailMapProps {
  */
 export default function DetailMap({ detail }: DetailMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<naver.maps.Map | null>(null);
-  const markerRef = useRef<naver.maps.Marker | null>(null);
-  const infoWindowRef = useRef<naver.maps.InfoWindow | null>(null);
+  const mapInstanceRef = useRef<NaverMap | null>(null);
+  const markerRef = useRef<NaverMarker | null>(null);
+  const infoWindowRef = useRef<NaverInfoWindow | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);

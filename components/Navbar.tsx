@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Home, BarChart3, Bookmark, Menu, ArrowLeft } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import TourSearch from "@/components/tour-search";
 
 const Navbar = () => {
@@ -97,7 +97,9 @@ const Navbar = () => {
         <div className="flex items-center gap-4">
           {/* 헤더 검색창 (데스크톱만 표시) */}
           <div className="hidden lg:block">
-            <TourSearch size="small" />
+            <Suspense fallback={<div className="w-48 h-9" />}>
+              <TourSearch size="small" />
+            </Suspense>
           </div>
 
           <div className="flex items-center gap-2">
@@ -130,7 +132,9 @@ const Navbar = () => {
           <div className="container px-4 py-4 space-y-2">
             {/* 모바일 검색창 */}
             <div className="mb-4">
-              <TourSearch size="small" />
+              <Suspense fallback={<div className="w-full h-9" />}>
+                <TourSearch size="small" />
+              </Suspense>
             </div>
             {navLinks.map((link) => {
               const Icon = link.icon;

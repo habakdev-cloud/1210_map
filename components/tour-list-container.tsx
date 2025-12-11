@@ -140,8 +140,14 @@ export default function TourListContainer({
         return sortTours(combined, sort); // 전체 목록 재정렬
       });
       setPagination(result.pagination);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
+    } catch (err: unknown) {
+      let error: Error;
+      if (err instanceof Error) {
+        error = err;
+      } else {
+        const errorMessage = err ? String(err) : 'Unknown error';
+        error = new Error(errorMessage);
+      }
       setError(error);
       console.error("다음 페이지 로드 실패:", error);
       throw error;

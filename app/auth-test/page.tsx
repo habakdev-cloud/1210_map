@@ -1,5 +1,8 @@
 "use client";
 
+// 동적 렌더링 강제 (useSearchParams 관련 에러 방지)
+export const dynamic = "force-dynamic";
+
 import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";

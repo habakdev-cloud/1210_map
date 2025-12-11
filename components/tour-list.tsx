@@ -104,7 +104,7 @@ export default function TourList({
         <p className="text-sm text-muted-foreground text-center">
           {searchKeyword ? (
             <>
-              <span className="font-medium">"{searchKeyword}"</span>에 대한 검색 결과가 없습니다.
+              <span className="font-medium">&quot;{searchKeyword}&quot;</span>에 대한 검색 결과가 없습니다.
               <br />
               다른 검색어를 시도하거나 필터 옵션을 변경해보세요.
             </>

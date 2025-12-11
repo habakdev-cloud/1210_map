@@ -138,8 +138,13 @@ async function fetchWithRetry<T>(
       }
 
       return data;
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        lastError = error;
+      } else {
+        const errorMessage = error ? String(error) : 'Unknown error';
+        lastError = new Error(errorMessage);
+      }
 
       // 마지막 시도가 아니면 재시도
       if (attempt < maxRetries) {

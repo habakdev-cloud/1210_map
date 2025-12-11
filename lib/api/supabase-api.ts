@@ -29,7 +29,7 @@ async function getSupabaseUserId(clerkUserId: string): Promise<string | null> {
     const supabase = await createClerkSupabaseClient();
     
     // 먼저 사용자 조회
-    let { data, error } = await supabase
+    const { data, error } = await supabase
       .from("users")
       .select("id")
       .eq("clerk_id", clerkUserId)

@@ -27,10 +27,41 @@ import { Button } from "@/components/ui/button";
 import { ZoomIn, ZoomOut, Map, Satellite } from "lucide-react";
 
 // Naver Maps API 타입 정의
+type NaverMap = any;
+type NaverMarker = any;
+type NaverInfoWindow = any;
+
 declare global {
   interface Window {
-    naver: typeof naver;
+    naver: {
+      maps: {
+        LatLng: new (lat: number, lng: number) => any;
+        Map: new (element: HTMLElement, options: any) => NaverMap;
+        Marker: new (options: any) => NaverMarker;
+        InfoWindow: new (options: any) => NaverInfoWindow;
+        Point: new (x: number, y: number) => any;
+        Event: {
+          addListener: (
+            target: any,
+            event: string,
+            handler: () => void,
+          ) => void;
+          removeListener: (
+            target: any,
+            event: string,
+            handler: () => void,
+          ) => void;
+        };
+        MapTypeId: {
+          NORMAL: string;
+          SATELLITE: string;
+        };
+      };
+    };
   }
+
+  // 전역 naver 변수 선언
+  const naver = (window as any).naver;
 }
 
 interface NaverMapProps {
@@ -57,9 +88,9 @@ export default function NaverMap({
   onMapTypeChange,
 }: NaverMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<naver.maps.Map | null>(null);
-  const markersRef = useRef<naver.maps.Marker[]>([]);
-  const infoWindowsRef = useRef<naver.maps.InfoWindow[]>([]);
+  const mapInstanceRef = useRef<NaverMap | null>(null);
+  const markersRef = useRef<NaverMarker[]>([]);
+  const infoWindowsRef = useRef<NaverInfoWindow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isScriptLoaded, setIsScriptLoaded] = useState(false);
@@ -149,7 +180,7 @@ export default function NaverMap({
           원본: { mapx: tour.mapx, mapy: tour.mapy },
           변환: coord,
         });
-        
+
         const position = new naver.maps.LatLng(coord.lat, coord.lng);
 
         // 마커 생성
@@ -158,7 +189,10 @@ export default function NaverMap({
           map,
           title: tour.title,
           icon: {
-            content: getMarkerIcon(tour.contenttypeid, tour.contentid === selectedTourId),
+            content: getMarkerIcon(
+              tour.contenttypeid,
+              tour.contentid === selectedTourId,
+            ),
             anchor: new naver.maps.Point(12, 34),
           },
         });
@@ -193,7 +227,9 @@ export default function NaverMap({
       }
     });
 
-    console.log(`마커 생성 완료: 성공 ${successCount}개, 실패 ${failCount}개, 총 ${markersRef.current.length}개 마커`);
+    console.log(
+      `마커 생성 완료: 성공 ${successCount}개, 실패 ${failCount}개, 총 ${markersRef.current.length}개 마커`,
+    );
   }, [tours, selectedTourId, isScriptLoaded, onMarkerClick]);
 
   // 선택된 관광지로 지도 이동
@@ -201,7 +237,9 @@ export default function NaverMap({
     if (!mapInstanceRef.current || !isScriptLoaded || !selectedTourId) return;
 
     const map = mapInstanceRef.current;
-    const selectedTour = tours.find((tour) => tour.contentid === selectedTourId);
+    const selectedTour = tours.find(
+      (tour) => tour.contentid === selectedTourId,
+    );
 
     if (!selectedTour || !selectedTour.mapx || !selectedTour.mapy) return;
 
@@ -216,7 +254,7 @@ export default function NaverMap({
 
       // 해당 마커의 인포윈도우 열기
       const markerIndex = markersRef.current.findIndex(
-        (marker) => marker.getTitle() === selectedTour.title
+        (marker) => marker.getTitle() === selectedTour.title,
       );
 
       if (markerIndex !== -1 && infoWindowsRef.current[markerIndex]) {
@@ -227,7 +265,10 @@ export default function NaverMap({
 
         // 약간의 지연을 두어 지도 이동 후 인포윈도우 열기
         setTimeout(() => {
-          infoWindowsRef.current[markerIndex].open(map, markersRef.current[markerIndex]);
+          infoWindowsRef.current[markerIndex].open(
+            map,
+            markersRef.current[markerIndex],
+          );
         }, 300);
       }
     } catch (err) {
@@ -240,7 +281,10 @@ export default function NaverMap({
     if (!mapInstanceRef.current) return;
 
     const map = mapInstanceRef.current;
-    const mapTypeId = mapType === "satellite" ? naver.maps.MapTypeId.SATELLITE : naver.maps.MapTypeId.NORMAL;
+    const mapTypeId =
+      mapType === "satellite"
+        ? naver.maps.MapTypeId.SATELLITE
+        : naver.maps.MapTypeId.NORMAL;
     map.setMapTypeId(mapTypeId);
   }, [mapType]);
 
@@ -315,8 +359,12 @@ export default function NaverMap({
     return (
       <div className="flex items-center justify-center h-[400px] md:h-[600px] bg-muted rounded-lg border border-border">
         <div className="text-center space-y-2">
-          <p className="text-sm text-muted-foreground">네이버 지도 API 키가 설정되지 않았습니다.</p>
-          <p className="text-xs text-muted-foreground">NEXT_PUBLIC_NAVER_MAP_CLIENT_ID 환경변수를 설정해주세요.</p>
+          <p className="text-sm text-muted-foreground">
+            네이버 지도 API 키가 설정되지 않았습니다.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            NEXT_PUBLIC_NAVER_MAP_CLIENT_ID 환경변수를 설정해주세요.
+          </p>
         </div>
       </div>
     );
@@ -341,7 +389,9 @@ export default function NaverMap({
           <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
             <div className="text-center space-y-2">
               <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-              <p className="text-sm text-muted-foreground">지도를 불러오는 중...</p>
+              <p className="text-sm text-muted-foreground">
+                지도를 불러오는 중...
+              </p>
             </div>
           </div>
         )}
@@ -387,7 +437,9 @@ export default function NaverMap({
               size="icon"
               onClick={handleMapTypeToggle}
               className="bg-background border border-border shadow-md"
-              aria-label={mapType === "normal" ? "위성 지도로 전환" : "일반 지도로 전환"}
+              aria-label={
+                mapType === "normal" ? "위성 지도로 전환" : "일반 지도로 전환"
+              }
             >
               {mapType === "normal" ? (
                 <Satellite className="w-4 h-4" />
@@ -401,4 +453,3 @@ export default function NaverMap({
     </>
   );
 }
-

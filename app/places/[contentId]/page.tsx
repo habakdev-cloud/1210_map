@@ -20,7 +20,12 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { getDetailCommon, getDetailIntro, getDetailImage, getDetailPetTour } from "@/lib/api/tour-api";
+import {
+  getDetailCommon,
+  getDetailIntro,
+  getDetailImage,
+  getDetailPetTour,
+} from "@/lib/api/tour-api";
 import DetailInfo from "@/components/tour-detail/detail-info";
 import DetailIntro from "@/components/tour-detail/detail-intro";
 import DetailGallery from "@/components/tour-detail/detail-gallery";
@@ -28,7 +33,7 @@ import DetailMap from "@/components/tour-detail/detail-map";
 import DetailPetTour from "@/components/tour-detail/detail-pet-tour";
 import DetailRecommendations from "@/components/tour-detail/detail-recommendations";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Error } from "@/components/ui/error";
+import { Error as ErrorComponent } from "@/components/ui/error";
 
 interface PlaceDetailPageProps {
   params: Promise<{
@@ -103,7 +108,8 @@ export async function generateMetadata({
     console.error("메타데이터 생성 실패:", error);
     return {
       title: "관광지 정보 - My Trip",
-      description: "한국관광공사 공공 API를 활용한 전국 관광지 정보 검색 서비스",
+      description:
+        "한국관광공사 공공 API를 활용한 전국 관광지 정보 검색 서비스",
     };
   }
 }
@@ -142,7 +148,9 @@ function DetailPageSkeleton() {
 /**
  * 관광지 상세페이지
  */
-export default async function PlaceDetailPage({ params }: PlaceDetailPageProps) {
+export default async function PlaceDetailPage({
+  params,
+}: PlaceDetailPageProps) {
   // Next.js 15: params는 Promise이므로 await 필요
   const { contentId } = await params;
 
@@ -160,18 +168,19 @@ export default async function PlaceDetailPage({ params }: PlaceDetailPageProps) 
 
   try {
     detail = await getDetailCommon({ contentId });
-    
+
     // 기본 정보가 있으면 운영 정보, 이미지, 반려동물 정보도 조회 (선택적)
     if (detail) {
       // 병렬로 운영 정보, 이미지, 반려동물 정보 조회
-      const [introResult, imagesResult, petInfoResult] = await Promise.allSettled([
-        getDetailIntro({
-          contentId,
-          contentTypeId: detail.contenttypeid,
-        }),
-        getDetailImage({ contentId }),
-        getDetailPetTour({ contentId }),
-      ]);
+      const [introResult, imagesResult, petInfoResult] =
+        await Promise.allSettled([
+          getDetailIntro({
+            contentId,
+            contentTypeId: detail.contenttypeid,
+          }),
+          getDetailImage({ contentId }),
+          getDetailPetTour({ contentId }),
+        ]);
 
       // 운영 정보 처리
       if (introResult.status === "fulfilled") {
@@ -194,9 +203,14 @@ export default async function PlaceDetailPage({ params }: PlaceDetailPageProps) 
         console.warn("반려동물 정보 조회 실패 (무시됨):", petInfoResult.reason);
       }
     }
-  } catch (err) {
+  } catch (err: unknown) {
     console.error("상세 정보 조회 실패:", err);
-    error = err instanceof Error ? err : new Error(String(err));
+    if (err instanceof Error) {
+      error = err;
+    } else {
+      const errorMessage = err ? String(err) : "Unknown error";
+      error = new Error(errorMessage);
+    }
   }
 
   // 데이터가 없으면 404
@@ -208,7 +222,7 @@ export default async function PlaceDetailPage({ params }: PlaceDetailPageProps) 
   if (error) {
     return (
       <div className="container max-w-7xl mx-auto px-4 py-8">
-        <Error
+        <ErrorComponent
           message={error.message || "관광지 정보를 불러올 수 없습니다."}
           type="api"
         />
@@ -230,4 +244,3 @@ export default async function PlaceDetailPage({ params }: PlaceDetailPageProps) 
     </main>
   );
 }
-
