@@ -18,6 +18,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -65,6 +66,7 @@ interface BookmarkCardProps {
   tour: TourItem;
   onDelete?: (contentId: string) => Promise<void>;
   isDeleting?: boolean;
+  priority?: boolean;
 }
 
 /**
@@ -74,6 +76,7 @@ export default function BookmarkCard({
   tour,
   onDelete,
   isDeleting = false,
+  priority = false,
 }: BookmarkCardProps) {
   const router = useRouter();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -125,13 +128,14 @@ export default function BookmarkCard({
           {/* 이미지 영역 */}
           <div className="relative w-full aspect-video overflow-hidden bg-muted">
             {imageUrl && !imageError ? (
-              <img
+              <Image
                 src={imageUrl}
                 alt={tour.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                loading="lazy"
+                fill
+                className="object-cover group-hover:scale-110 transition-transform duration-300"
+                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                priority={priority}
                 onError={() => setImageError(true)}
-                suppressHydrationWarning
               />
             ) : (
               <div
@@ -212,4 +216,5 @@ export default function BookmarkCard({
     </>
   );
 }
+
 

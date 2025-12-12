@@ -20,6 +20,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin } from "lucide-react";
 import { useState } from "react";
 import type { TourItem } from "@/lib/types/tour";
@@ -55,12 +56,13 @@ interface TourCardProps {
   tour: TourItem;
   isSelected?: boolean;
   onClick?: () => void;
+  priority?: boolean;
 }
 
 /**
  * 관광지 카드 컴포넌트
  */
-export default function TourCard({ tour, isSelected = false, onClick }: TourCardProps) {
+export default function TourCard({ tour, isSelected = false, onClick, priority = false }: TourCardProps) {
   const imageUrl = tour.firstimage || tour.firstimage2;
   const contentTypeName = getContentTypeName(tour.contenttypeid);
   const address = tour.addr2 ? `${tour.addr1} ${tour.addr2}` : tour.addr1;
@@ -89,13 +91,14 @@ export default function TourCard({ tour, isSelected = false, onClick }: TourCard
       {/* 이미지 영역 */}
       <div className="relative w-full aspect-video overflow-hidden bg-muted">
         {imageUrl && !imageError ? (
-          <img
+          <Image
             src={imageUrl}
             alt={tour.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-            loading="lazy"
+            fill
+            className="object-cover group-hover:scale-110 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            priority={priority}
             onError={() => setImageError(true)}
-            suppressHydrationWarning
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground" aria-hidden="true">

@@ -141,7 +141,7 @@ export default function DetailGallery({ images, title = "이미지 갤러리" }:
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-300"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    loading={index === 0 ? "eager" : "lazy"}
+                    priority={index === 0}
                     onError={(e) => {
                       // 이미지 로드 실패 시 기본 이미지 표시
                       const target = e.currentTarget;

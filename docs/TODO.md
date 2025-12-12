@@ -706,22 +706,22 @@
 
 ## Phase 6: 최적화 & 배포
 
-- [ ] 이미지 최적화
-  - [ ] `next.config.ts` 외부 도메인 설정
-    - [ ] 한국관광공사 이미지 도메인 추가
-    - [ ] 네이버 지도 이미지 도메인 추가
-  - [ ] Next.js Image 컴포넌트 사용 확인
-    - [ ] priority 속성 (above-the-fold)
-    - [ ] lazy loading (below-the-fold)
-    - [ ] responsive sizes 설정
-- [ ] 전역 에러 핸들링
-  - [ ] `app/error.tsx` 생성
-  - [ ] `app/global-error.tsx` 생성
-  - [ ] API 에러 처리 개선
-- [ ] 404 페이지
-  - [ ] `app/not-found.tsx` 생성
-    - [ ] 사용자 친화적인 메시지
-    - [ ] 홈으로 돌아가기 버튼
+- [x] 이미지 최적화
+  - [x] `next.config.ts` 외부 도메인 설정
+    - [x] 한국관광공사 이미지 도메인 추가
+    - [x] 네이버 지도 이미지 도메인 추가
+  - [x] Next.js Image 컴포넌트 사용 확인
+    - [x] priority 속성 (above-the-fold)
+    - [x] lazy loading (below-the-fold)
+    - [x] responsive sizes 설정
+- [x] 전역 에러 핸들링
+  - [x] `app/error.tsx` 생성
+  - [x] `app/global-error.tsx` 생성
+  - [x] API 에러 처리 개선
+- [x] 404 페이지
+  - [x] `app/not-found.tsx` 생성
+    - [x] 사용자 친화적인 메시지
+    - [x] 홈으로 돌아가기 버튼
 - [ ] SEO 최적화
   - [ ] 메타태그 설정 (`app/layout.tsx`)
     - [ ] 기본 title, description

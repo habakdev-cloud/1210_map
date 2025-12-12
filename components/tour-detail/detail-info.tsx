@@ -22,6 +22,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { MapPin, Phone, Globe, Copy, Check, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -182,12 +183,14 @@ export default function DetailInfo({ detail }: DetailInfoProps) {
       {/* 대표 이미지 */}
       <figure className="relative w-full aspect-video md:aspect-[21/9] rounded-xl overflow-hidden bg-muted">
         {imageUrl && !imageError ? (
-          <img
+          <Image
             src={imageUrl}
             alt={`${detail.title} 대표 이미지`}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 1280px) 100vw, 1280px"
+            priority
             onError={() => setImageError(true)}
-            loading="eager"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center" aria-label="이미지 없음">

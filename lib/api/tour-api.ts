@@ -166,14 +166,38 @@ async function fetchWithRetry<T>(
         } else {
           // 일반 에러: 지수 백오프
           waitTime = delay * Math.pow(2, attempt);
-          console.warn(`API 호출 실패, ${waitTime}ms 후 재시도 (${attempt + 1}/${maxRetries})`);
+          if (process.env.NODE_ENV === "development") {
+            console.warn(`API 호출 실패, ${waitTime}ms 후 재시도 (${attempt + 1}/${maxRetries}):`, lastError?.message);
+          }
         }
         await new Promise((resolve) => setTimeout(resolve, waitTime));
       }
     }
   }
 
-  throw lastError || new Error("Unknown error occurred");
+  // 최종 실패 시 사용자 친화적인 에러 메시지 생성
+  const finalError = lastError || new Error("알 수 없는 오류가 발생했습니다.");
+  
+  // 에러 메시지 개선
+  if (lastStatusCode === 429) {
+    throw new Error("요청이 너무 많습니다. 잠시 후 다시 시도해주세요.");
+  }
+  if (lastStatusCode === 404) {
+    throw new Error("요청한 데이터를 찾을 수 없습니다.");
+  }
+  if (lastStatusCode && lastStatusCode >= 500) {
+    throw new Error("서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+  }
+  if (lastError?.message.includes("network") || lastError?.message.includes("fetch")) {
+    throw new Error("네트워크 연결을 확인해주세요.");
+  }
+
+  // 프로덕션 환경에서는 일반적인 메시지, 개발 환경에서는 상세 정보
+  if (process.env.NODE_ENV === "development") {
+    throw finalError;
+  } else {
+    throw new Error("데이터를 불러오는 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+  }
 }
 
 /**
