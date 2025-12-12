@@ -7,7 +7,7 @@
  *
  * 측정 지표:
  * - LCP (Largest Contentful Paint): 2.5초 이하 목표
- * - FID (First Input Delay): 100ms 이하 목표
+ * - INP (Interaction to Next Paint): 200ms 이하 목표 (FID를 대체, 2024년부터 Core Web Vital)
  * - CLS (Cumulative Layout Shift): 0.1 이하 목표
  * - FCP (First Contentful Paint): 1.8초 이하 목표
  * - TTFB (Time to First Byte): 800ms 이하 목표
@@ -15,7 +15,7 @@
  * @see {@link https://web.dev/vitals/} - Web Vitals 가이드
  */
 
-import { onCLS, onFID, onFCP, onLCP, onTTFB, onINP } from "web-vitals";
+import { onCLS, onFCP, onLCP, onTTFB, onINP } from "web-vitals";
 import type { Metric } from "web-vitals";
 
 /**
@@ -57,7 +57,6 @@ function getUnit(name: string): string {
       return "";
     case "FCP":
     case "LCP":
-    case "FID":
     case "INP":
     case "TTFB":
       return "ms";
@@ -78,12 +77,11 @@ export function reportWebVitals() {
 
   // Core Web Vitals
   onCLS(logMetric);
-  onFID(logMetric);
   onLCP(logMetric);
+  onINP(logMetric); // INP는 FID를 대체한 새로운 Core Web Vital (2024년부터)
 
   // 기타 성능 지표
   onFCP(logMetric);
   onTTFB(logMetric);
-  onINP(logMetric); // INP는 FID의 향상된 버전 (Chrome 96+)
 }
 
