@@ -22,6 +22,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { BugReportButton } from "@/components/feedback/bug-report-button";
+import * as Sentry from "@sentry/nextjs";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
@@ -41,7 +43,17 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
       digest: error.digest,
     });
 
-    // TODO: 프로덕션 환경에서 에러 모니터링 서비스로 전송 (Sentry 등)
+    // Sentry로 에러 전송 (환경변수가 있을 때만)
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      Sentry.captureException(error, {
+        tags: {
+          errorBoundary: "global",
+        },
+        extra: {
+          digest: error.digest,
+        },
+      });
+    }
   }, [error]);
 
   return (
@@ -95,6 +107,18 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               >
                 홈으로 돌아가기
               </button>
+              <div className="flex justify-center">
+                <BugReportButton
+                  size="lg"
+                  variant="outline"
+                  initialErrorStack={error.stack}
+                  initialPageUrl={
+                    typeof window !== "undefined"
+                      ? window.location.href
+                      : undefined
+                  }
+                />
+              </div>
             </div>
 
             {/* 개발 환경에서만 상세 정보 표시 */}
@@ -115,4 +139,3 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
     </html>
   );
 }
-

@@ -22,6 +22,8 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { AlertCircle, RefreshCw, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BugReportButton } from "@/components/feedback/bug-report-button";
+import * as Sentry from "@sentry/nextjs";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -45,7 +47,17 @@ export default function Error({ error, reset }: ErrorProps) {
       console.error("에러 발생:", error.message);
     }
 
-    // TODO: 프로덕션 환경에서 에러 모니터링 서비스로 전송 (Sentry 등)
+    // Sentry로 에러 전송 (환경변수가 있을 때만)
+    if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+      Sentry.captureException(error, {
+        tags: {
+          errorBoundary: "segment",
+        },
+        extra: {
+          digest: error.digest,
+        },
+      });
+    }
   }, [error]);
 
   // 에러 타입에 따른 메시지 결정
@@ -106,10 +118,17 @@ export default function Error({ error, reset }: ErrorProps) {
                 홈으로 돌아가기
               </Link>
             </Button>
+            <BugReportButton
+              size="lg"
+              variant="outline"
+              initialErrorStack={error.stack}
+              initialPageUrl={
+                typeof window !== "undefined" ? window.location.href : undefined
+              }
+            />
           </div>
         </div>
       </div>
     </main>
   );
 }
-

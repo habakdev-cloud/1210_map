@@ -8,6 +8,7 @@ import { SyncUserProvider } from "@/components/providers/sync-user-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { clerkLocalization } from "@/lib/clerk/localization";
 import { Toaster } from "@/components/ui/sonner";
+import { WebVitalsReporter } from "@/components/analytics/web-vitals-reporter";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -113,6 +114,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             <SyncUserProvider>
+              <WebVitalsReporter />
               <Navbar />
               {children}
               <Footer />

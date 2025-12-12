@@ -23,11 +23,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Keyboard } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { MapPin, X, ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import type { TourImage } from "@/lib/types/tour";
 
@@ -39,10 +35,16 @@ interface DetailGalleryProps {
 /**
  * 이미지 갤러리 컴포넌트
  */
-export default function DetailGallery({ images, title = "이미지 갤러리" }: DetailGalleryProps) {
-  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
+export default function DetailGallery({
+  images,
+  title = "이미지 갤러리",
+}: DetailGalleryProps) {
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(
+    null,
+  );
   const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
-  const [modalSwiperInstance, setModalSwiperInstance] = useState<SwiperType | null>(null);
+  const [modalSwiperInstance, setModalSwiperInstance] =
+    useState<SwiperType | null>(null);
 
   // 이미지가 없으면 기본 이미지 표시
   if (!images || images.length === 0) {
@@ -52,11 +54,15 @@ export default function DetailGallery({ images, title = "이미지 갤러리" }:
         aria-label={title}
       >
         <div className="bg-card rounded-lg border border-border p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-6">{title}</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-6">
+            {title}
+          </h2>
           <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted flex items-center justify-center">
             <div className="text-center space-y-2">
               <MapPin className="w-16 h-16 text-muted-foreground mx-auto opacity-50" />
-              <p className="text-sm text-muted-foreground">이미지가 없습니다.</p>
+              <p className="text-sm text-muted-foreground">
+                이미지가 없습니다.
+              </p>
             </div>
           </div>
         </div>
@@ -102,9 +108,22 @@ export default function DetailGallery({ images, title = "이미지 갤러리" }:
         <h2 className="text-xl font-semibold text-foreground mb-6">{title}</h2>
 
         {/* 메인 갤러리 슬라이드 */}
-        <div className="relative">
+        <div
+          className="relative"
+          onKeyDown={(e) => {
+            if (!swiperInstance) return;
+            if (e.key === "ArrowLeft") {
+              swiperInstance.slidePrev();
+            } else if (e.key === "ArrowRight") {
+              swiperInstance.slideNext();
+            }
+          }}
+          tabIndex={0}
+          role="region"
+          aria-label="이미지 갤러리 (화살표 키로 네비게이션)"
+        >
           <Swiper
-            modules={[Navigation, Pagination]}
+            modules={[Navigation, Pagination, Keyboard]}
             spaceBetween={16}
             slidesPerView={1}
             navigation={{
@@ -114,6 +133,9 @@ export default function DetailGallery({ images, title = "이미지 갤러리" }:
             pagination={{
               clickable: true,
               dynamicBullets: true,
+            }}
+            keyboard={{
+              enabled: true,
             }}
             breakpoints={{
               640: {
@@ -133,7 +155,9 @@ export default function DetailGallery({ images, title = "이미지 갤러리" }:
                 <button
                   onClick={() => handleImageClick(index)}
                   className="relative w-full aspect-video rounded-lg overflow-hidden bg-muted cursor-pointer group hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                  aria-label={`${image.imgname || `이미지 ${index + 1}`} 전체화면 보기`}
+                  aria-label={`${
+                    image.imgname || `이미지 ${index + 1}`
+                  } 전체화면 보기`}
                 >
                   <Image
                     src={image.originimgurl}
@@ -159,13 +183,19 @@ export default function DetailGallery({ images, title = "이미지 갤러리" }:
             className="swiper-button-prev-custom absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border flex items-center justify-center hover:bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label="이전 이미지"
           >
-            <ChevronLeft className="w-5 h-5 text-foreground" />
+            <ChevronLeft
+              className="w-5 h-5 text-foreground"
+              aria-hidden="true"
+            />
           </button>
           <button
             className="swiper-button-next-custom absolute right-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm border border-border flex items-center justify-center hover:bg-background transition-colors focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label="다음 이미지"
           >
-            <ChevronRight className="w-5 h-5 text-foreground" />
+            <ChevronRight
+              className="w-5 h-5 text-foreground"
+              aria-hidden="true"
+            />
           </button>
         </div>
 
@@ -178,85 +208,85 @@ export default function DetailGallery({ images, title = "이미지 갤러리" }:
             className="max-w-7xl w-full h-[90vh] p-0 bg-black/95 border-none"
             onKeyDown={handleKeyDown}
           >
-              <div className="relative w-full h-full flex items-center justify-center">
-                {/* 모달 내부 Swiper */}
-                <Swiper
-                  modules={[Navigation, Pagination, Keyboard]}
-                  spaceBetween={0}
-                  slidesPerView={1}
-                  navigation={{
-                    prevEl: ".modal-swiper-button-prev",
-                    nextEl: ".modal-swiper-button-next",
-                  }}
-                  pagination={{
-                    clickable: true,
-                    dynamicBullets: true,
-                  }}
-                  keyboard={{
-                    enabled: true,
-                  }}
-                  initialSlide={selectedImageIndex ?? 0}
-                  onSwiper={(swiper) => {
-                    setModalSwiperInstance(swiper);
-                    // Swiper 초기화 후 선택된 이미지로 이동
-                    if (selectedImageIndex !== null) {
-                      setTimeout(() => {
-                        swiper.slideTo(selectedImageIndex);
-                      }, 100);
-                    }
-                  }}
-                  className="!w-full !h-full"
-                >
-                  {images.map((image, index) => (
-                    <SwiperSlide key={image.originimgurl || index}>
-                      <div className="relative w-full h-full flex items-center justify-center p-4">
-                        <Image
-                          src={image.originimgurl}
-                          alt={image.imgname || `${title} 이미지 ${index + 1}`}
-                          fill
-                          className="object-contain"
-                          sizes="100vw"
-                          priority={index === selectedImageIndex}
-                          onError={(e) => {
-                            const target = e.currentTarget;
-                            target.src = "/logo.png";
-                          }}
-                        />
-                      </div>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-
-                {/* 모달 네비게이션 버튼 */}
-                <button
-                  className="modal-swiper-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white/50"
-                  aria-label="이전 이미지"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-                <button
-                  className="modal-swiper-button-next absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white/50"
-                  aria-label="다음 이미지"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-
-                {/* 이미지 정보 및 카운터 */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
-                  {images[selectedImageIndex]?.imgname && (
-                    <div className="bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg text-white text-sm">
-                      {images[selectedImageIndex].imgname}
+            <div className="relative w-full h-full flex items-center justify-center">
+              {/* 모달 내부 Swiper */}
+              <Swiper
+                modules={[Navigation, Pagination, Keyboard]}
+                spaceBetween={0}
+                slidesPerView={1}
+                navigation={{
+                  prevEl: ".modal-swiper-button-prev",
+                  nextEl: ".modal-swiper-button-next",
+                }}
+                pagination={{
+                  clickable: true,
+                  dynamicBullets: true,
+                }}
+                keyboard={{
+                  enabled: true,
+                }}
+                initialSlide={selectedImageIndex ?? 0}
+                onSwiper={(swiper) => {
+                  setModalSwiperInstance(swiper);
+                  // Swiper 초기화 후 선택된 이미지로 이동
+                  if (selectedImageIndex !== null) {
+                    setTimeout(() => {
+                      swiper.slideTo(selectedImageIndex);
+                    }, 100);
+                  }
+                }}
+                className="!w-full !h-full"
+              >
+                {images.map((image, index) => (
+                  <SwiperSlide key={image.originimgurl || index}>
+                    <div className="relative w-full h-full flex items-center justify-center p-4">
+                      <Image
+                        src={image.originimgurl}
+                        alt={image.imgname || `${title} 이미지 ${index + 1}`}
+                        fill
+                        className="object-contain"
+                        sizes="100vw"
+                        priority={index === selectedImageIndex}
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.src = "/logo.png";
+                        }}
+                      />
                     </div>
-                  )}
-                  <div className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs">
-                    {selectedImageIndex !== null ? selectedImageIndex + 1 : 0} / {images.length}
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+
+              {/* 모달 네비게이션 버튼 */}
+              <button
+                className="modal-swiper-button-prev absolute left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="이전 이미지"
+              >
+                <ChevronLeft className="w-6 h-6" aria-hidden="true" />
+              </button>
+              <button
+                className="modal-swiper-button-next absolute right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center hover:bg-white/20 transition-colors text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+                aria-label="다음 이미지"
+              >
+                <ChevronRight className="w-6 h-6" aria-hidden="true" />
+              </button>
+
+              {/* 이미지 정보 및 카운터 */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2">
+                {images[selectedImageIndex]?.imgname && (
+                  <div className="bg-black/50 backdrop-blur-sm px-4 py-2 rounded-lg text-white text-sm">
+                    {images[selectedImageIndex].imgname}
                   </div>
+                )}
+                <div className="bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-xs">
+                  {selectedImageIndex !== null ? selectedImageIndex + 1 : 0} /{" "}
+                  {images.length}
                 </div>
               </div>
-            </DialogContent>
+            </div>
+          </DialogContent>
         </Dialog>
       </div>
     </section>
   );
 }
-

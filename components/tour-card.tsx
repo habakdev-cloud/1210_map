@@ -62,7 +62,12 @@ interface TourCardProps {
 /**
  * 관광지 카드 컴포넌트
  */
-export default function TourCard({ tour, isSelected = false, onClick, priority = false }: TourCardProps) {
+export default function TourCard({
+  tour,
+  isSelected = false,
+  onClick,
+  priority = false,
+}: TourCardProps) {
   const imageUrl = tour.firstimage || tour.firstimage2;
   const contentTypeName = getContentTypeName(tour.contenttypeid);
   const address = tour.addr2 ? `${tour.addr1} ${tour.addr2}` : tour.addr1;
@@ -76,17 +81,32 @@ export default function TourCard({ tour, isSelected = false, onClick, priority =
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLAnchorElement>) => {
+    // Enter 키 또는 Space 키로 클릭 가능
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (onClick) {
+        onClick();
+      } else {
+        // onClick이 없으면 기본 링크 동작 (프로그래밍 방식으로 이동)
+        window.location.href = `/places/${tour.contentid}`;
+      }
+    }
+  };
+
   return (
     <Link
       href={`/places/${tour.contentid}`}
       onClick={handleClick}
-      className={`group block bg-card rounded-xl shadow-md border overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02] cursor-pointer ${
+      onKeyDown={handleKeyDown}
+      className={`group block bg-card rounded-xl shadow-md border overflow-hidden transition-all duration-300 hover:shadow-xl hover:scale-[1.02] cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
         isSelected
           ? "border-primary shadow-lg ring-2 ring-primary/20"
           : "border-border"
       }`}
       aria-label={`${tour.title} 상세보기`}
       aria-current={isSelected ? "true" : undefined}
+      tabIndex={0}
     >
       {/* 이미지 영역 */}
       <div className="relative w-full aspect-video overflow-hidden bg-muted">
@@ -101,7 +121,10 @@ export default function TourCard({ tour, isSelected = false, onClick, priority =
             onError={() => setImageError(true)}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground" aria-hidden="true">
+          <div
+            className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground"
+            aria-hidden="true"
+          >
             <MapPin className="w-12 h-12 opacity-50" />
           </div>
         )}
@@ -117,7 +140,9 @@ export default function TourCard({ tour, isSelected = false, onClick, priority =
         {/* 주소 */}
         <div className="flex items-start gap-2 text-sm text-muted-foreground">
           <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" aria-hidden="true" />
-          <span className="overflow-hidden text-ellipsis whitespace-nowrap">{address}</span>
+          <span className="overflow-hidden text-ellipsis whitespace-nowrap">
+            {address}
+          </span>
         </div>
 
         {/* 관광 타입 뱃지 */}
@@ -130,4 +155,3 @@ export default function TourCard({ tour, isSelected = false, onClick, priority =
     </Link>
   );
 }
-

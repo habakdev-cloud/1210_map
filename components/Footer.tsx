@@ -14,6 +14,7 @@
  */
 
 import Link from "next/link";
+import { FeedbackButton } from "@/components/feedback/feedback-button";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -31,6 +32,9 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 text-sm text-muted-foreground">
             {/* 링크 섹션 (향후 구현) */}
             <div className="flex items-center gap-4 md:gap-6">
+              {/* 피드백 버튼 */}
+              <FeedbackButton size="sm" variant="outline" />
+              
               {/* About, Contact 링크는 향후 구현 */}
               {/* <Link href="/about" className="hover:text-primary transition-colors">
                 About

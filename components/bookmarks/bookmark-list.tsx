@@ -52,7 +52,7 @@ import type { TourDetail } from "@/lib/types/tour";
  */
 function convertDetailToItem(
   detail: TourDetail,
-  bookmarkCreatedAt?: string
+  bookmarkCreatedAt?: string,
 ): TourItem & { bookmarkCreatedAt?: string } {
   return {
     contentid: detail.contentid,
@@ -81,7 +81,7 @@ type SortType = "latest" | "name" | "area";
  */
 function sortTours(
   tours: (TourItem & { bookmarkCreatedAt?: string })[],
-  sortType: SortType
+  sortType: SortType,
 ): (TourItem & { bookmarkCreatedAt?: string })[] {
   const sorted = [...tours];
 
@@ -151,9 +151,9 @@ export default function BookmarkList() {
               (detail) => ({
                 detail,
                 created_at: bookmark.created_at,
-              })
-            )
-          )
+              }),
+            ),
+          ),
         );
 
         // 성공한 결과만 필터링 및 변환
@@ -161,19 +161,18 @@ export default function BookmarkList() {
           tourDetails
             .filter(
               (
-                result
+                result,
               ): result is PromiseFulfilledResult<{
                 detail: TourDetail | null;
                 created_at: string;
               }> =>
-                result.status === "fulfilled" &&
-                result.value.detail !== null
+                result.status === "fulfilled" && result.value.detail !== null,
             )
             .map((result) =>
               convertDetailToItem(
                 result.value.detail!,
-                result.value.created_at
-              )
+                result.value.created_at,
+              ),
             );
 
         setTours(loadedTours);
@@ -191,7 +190,7 @@ export default function BookmarkList() {
   // 정렬된 목록
   const sortedTours = useMemo(
     () => sortTours(tours, sortType),
-    [tours, sortType]
+    [tours, sortType],
   );
 
   // 개별 삭제 핸들러
@@ -230,11 +229,13 @@ export default function BookmarkList() {
       const result = await removeBookmarks(contentIds);
       if (result.success) {
         toast.success(
-          `${result.deletedCount || contentIds.length}개의 북마크가 삭제되었습니다.`
+          `${
+            result.deletedCount || contentIds.length
+          }개의 북마크가 삭제되었습니다.`,
         );
         // 목록에서 제거
         setTours((prev) =>
-          prev.filter((tour) => !selectedIds.has(tour.contentid))
+          prev.filter((tour) => !selectedIds.has(tour.contentid)),
         );
         // 선택 상태 초기화
         setSelectedIds(new Set());
@@ -303,8 +304,7 @@ export default function BookmarkList() {
   }
 
   const isAllSelected =
-    sortedTours.length > 0 &&
-    selectedIds.size === sortedTours.length;
+    sortedTours.length > 0 && selectedIds.size === sortedTours.length;
   const isIndeterminate =
     selectedIds.size > 0 && selectedIds.size < sortedTours.length;
 
@@ -319,7 +319,10 @@ export default function BookmarkList() {
               className="w-4 h-4 text-muted-foreground"
               aria-hidden="true"
             />
-            <Select value={sortType} onValueChange={(value) => setSortType(value as SortType)}>
+            <Select
+              value={sortType}
+              onValueChange={(value) => setSortType(value as SortType)}
+            >
               <SelectTrigger className="w-[140px]" aria-label="정렬 옵션 선택">
                 <SelectValue />
               </SelectTrigger>
@@ -359,8 +362,9 @@ export default function BookmarkList() {
                     size="sm"
                     onClick={() => setShowDeleteDialog(true)}
                     disabled={isDeleting}
+                    aria-label={`선택한 ${selectedIds.size}개 북마크 일괄 삭제`}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="w-4 h-4 mr-2" aria-hidden="true" />
                     일괄 삭제
                   </Button>
                 </>
@@ -413,8 +417,7 @@ export default function BookmarkList() {
             <DialogTitle>북마크 일괄 삭제</DialogTitle>
             <DialogDescription>
               선택한 {selectedIds.size}개의 북마크를 삭제하시겠습니까?
-              <br />
-              이 작업은 되돌릴 수 없습니다.
+              <br />이 작업은 되돌릴 수 없습니다.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

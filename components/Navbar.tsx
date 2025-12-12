@@ -35,6 +35,22 @@ const Navbar = () => {
     setIsDetailPage(pathname?.startsWith("/places/") ?? false);
   }, [pathname]);
 
+  // 모바일 메뉴 Esc 키로 닫기
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      return () => {
+        window.removeEventListener("keydown", handleKeyDown);
+      };
+    }
+  }, [mobileMenuOpen]);
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4 max-w-7xl mx-auto">
@@ -48,7 +64,7 @@ const Navbar = () => {
               className="flex-shrink-0"
               aria-label="뒤로가기"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
             </Button>
           )}
           <Link href="/" className="flex items-center space-x-2">
@@ -59,7 +75,7 @@ const Navbar = () => {
         </div>
 
         {/* 데스크톱 네비게이션 */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-6" aria-label="메인 네비게이션">
           {navLinks.map((link) => {
             const Icon = link.icon;
             return (
@@ -72,8 +88,9 @@ const Navbar = () => {
                     ? "text-foreground"
                     : "text-muted-foreground"
                 )}
+                aria-current={isActive(link.href) ? "page" : undefined}
               >
-                {isMounted && <Icon className="h-4 w-4" />}
+                {isMounted && <Icon className="h-4 w-4" aria-hidden="true" />}
                 {link.label}
               </Link>
             );
@@ -87,8 +104,9 @@ const Navbar = () => {
                   ? "text-foreground"
                   : "text-muted-foreground"
               )}
+              aria-current={isActive("/bookmarks") ? "page" : undefined}
             >
-              {isMounted && <Bookmark className="h-4 w-4" />}
+              {isMounted && <Bookmark className="h-4 w-4" aria-hidden="true" />}
               북마크
             </Link>
           </SignedIn>
@@ -123,14 +141,14 @@ const Navbar = () => {
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="메뉴 토글"
           >
-            {isMounted && <Menu className="h-5 w-5" />}
+            {isMounted && <Menu className="h-5 w-5" aria-hidden="true" />}
           </Button>
         </div>
       </div>
 
       {/* 모바일 메뉴 */}
       {mobileMenuOpen && (
-        <nav className="md:hidden border-t bg-background">
+        <nav className="md:hidden border-t bg-background" aria-label="모바일 네비게이션">
           <div className="container px-4 py-4 space-y-2">
             {/* 모바일 검색창 */}
             <div className="mb-4">
@@ -151,8 +169,9 @@ const Navbar = () => {
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-accent"
                   )}
+                  aria-current={isActive(link.href) ? "page" : undefined}
                 >
-                  {isMounted && <Icon className="h-5 w-5" />}
+                  {isMounted && <Icon className="h-5 w-5" aria-hidden="true" />}
                   {link.label}
                 </Link>
               );
@@ -167,8 +186,9 @@ const Navbar = () => {
                     ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-accent"
                 )}
+                aria-current={isActive("/bookmarks") ? "page" : undefined}
               >
-                {isMounted && <Bookmark className="h-5 w-5" />}
+                {isMounted && <Bookmark className="h-5 w-5" aria-hidden="true" />}
                 북마크
               </Link>
             </SignedIn>

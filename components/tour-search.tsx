@@ -90,11 +90,14 @@ export default function TourSearch({
     }
   };
 
-  // 엔터 키 처리
+  // 엔터 키 및 Esc 키 처리
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleSearch(keyword);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      handleClear();
     }
   };
 

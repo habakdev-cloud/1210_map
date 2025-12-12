@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+// Sentry 설정 (환경변수가 있을 때만 활성화)
+const withSentryConfig = process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? require("@sentry/nextjs").withSentryConfig
+  : (config: NextConfig) => config;
+
 // 번들 분석 도구 설정
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
   enabled: process.env.ANALYZE === "true",
@@ -183,5 +188,19 @@ const nextConfig: NextConfig = {
   },
 };
 
-// 번들 분석기와 PWA를 함께 적용
-export default withBundleAnalyzer(withPWA(nextConfig));
+// Sentry, 번들 분석기, PWA를 함께 적용
+// Sentry는 환경변수가 있을 때만 활성화
+const configWithPWA = withBundleAnalyzer(withPWA(nextConfig));
+
+export default withSentryConfig(configWithPWA, {
+  // Sentry 설정 옵션
+  silent: true, // Sentry CLI 출력 억제
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Source maps는 프로덕션에서만 생성
+  widenClientFileUpload: true,
+  hideSourceMaps: true,
+  disableLogger: true,
+  // 자동 소스맵 업로드 (선택 사항)
+  automaticVercelMonitors: true,
+});
