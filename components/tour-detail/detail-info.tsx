@@ -59,23 +59,16 @@ function getContentTypeName(contentTypeId: string): string {
 
 /**
  * HTML 이스케이프 처리 (XSS 방지)
- * 클라이언트 사이드에서만 실행되도록 체크
+ * 서버와 클라이언트에서 동일한 결과를 보장하기 위해 동일한 로직 사용
  */
 function escapeHtml(text: string): string {
-  if (typeof window === "undefined") {
-    // 서버 사이드에서는 간단한 이스케이프 처리
-    return text
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
-  }
-  
-  // 클라이언트 사이드에서는 DOM API 사용
-  const div = document.createElement("div");
-  div.textContent = text;
-  return div.innerHTML;
+  // 서버와 클라이언트 모두에서 동일한 로직 사용 (hydration mismatch 방지)
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 interface DetailInfoProps {

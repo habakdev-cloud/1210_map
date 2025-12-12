@@ -16,13 +16,27 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import dynamic from "next/dynamic";
 import { List, Map as MapIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TourList from "@/components/tour-list";
 import TourListInfinite from "@/components/tour-list-infinite";
-import NaverMap from "@/components/naver-map";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { TourItem } from "@/lib/types/tour";
+
+// 네이버 지도 컴포넌트를 동적 import로 로드 (SSR 비활성화)
+const NaverMap = dynamic(() => import("@/components/naver-map"), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-[400px] md:h-[600px] rounded-lg border border-border bg-muted flex items-center justify-center">
+      <div className="text-center space-y-2">
+        <Skeleton className="w-12 h-12 rounded-full mx-auto" />
+        <p className="text-sm text-muted-foreground">지도를 불러오는 중...</p>
+      </div>
+    </div>
+  ),
+});
 
 interface TourMapViewProps {
   /** 관광지 목록 */
@@ -194,13 +208,24 @@ export default function TourMapView({
               isMobile && viewMode === "list" ? "hidden" : ""
             } ${viewMode === "split" ? "sticky top-4" : ""}`}
           >
-            <NaverMap
-              tours={tours}
-              selectedTourId={selectedTourId}
-              onMarkerClick={handleMarkerClick}
-              mapType={mapType}
-              onMapTypeChange={setMapType}
-            />
+            <Suspense
+              fallback={
+                <div className="w-full h-[400px] md:h-[600px] rounded-lg border border-border bg-muted flex items-center justify-center">
+                  <div className="text-center space-y-2">
+                    <Skeleton className="w-12 h-12 rounded-full mx-auto" />
+                    <p className="text-sm text-muted-foreground">지도를 불러오는 중...</p>
+                  </div>
+                </div>
+              }
+            >
+              <NaverMap
+                tours={tours}
+                selectedTourId={selectedTourId}
+                onMarkerClick={handleMarkerClick}
+                mapType={mapType}
+                onMapTypeChange={setMapType}
+              />
+            </Suspense>
           </div>
         )}
       </div>

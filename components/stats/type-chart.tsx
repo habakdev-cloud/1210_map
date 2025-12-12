@@ -22,6 +22,7 @@
 
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from "recharts";
 import {
@@ -48,18 +49,63 @@ interface TypeChartProps {
 }
 
 /**
- * 차트 색상 설정 (chart-1 ~ chart-5 CSS 변수 활용, 8개 타입에 맞게 반복)
+ * CSS 변수에서 실제 색상 값을 가져오는 함수
+ * recharts는 CSS 변수를 직접 사용할 수 없으므로 실제 색상 값으로 변환
  */
-const CHART_COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-] as const;
+const getChartColor = (varName: string): string => {
+  if (typeof window === "undefined") {
+    // 서버 사이드에서는 기본 색상 반환
+    return "#8884d8";
+  }
+
+  const root = document.documentElement;
+  const value = getComputedStyle(root).getPropertyValue(varName).trim();
+  
+  if (!value) {
+    return "#8884d8";
+  }
+
+  // oklch 형식을 그대로 반환 (최신 브라우저에서 지원)
+  // recharts가 oklch를 지원하지 않을 수 있으므로, fallback 색상도 제공
+  return value;
+};
+
+/**
+ * 차트 색상 배열 가져오기 (클라이언트 사이드에서만 동작)
+ */
+const getChartColors = (): string[] => {
+  const colors = [
+    getChartColor("--chart-1"),
+    getChartColor("--chart-2"),
+    getChartColor("--chart-3"),
+    getChartColor("--chart-4"),
+    getChartColor("--chart-5"),
+    getChartColor("--chart-1"),
+    getChartColor("--chart-2"),
+    getChartColor("--chart-3"),
+  ];
+
+  // oklch 형식이 recharts에서 작동하지 않을 수 있으므로 fallback 색상 제공
+  // 다크 모드와 라이트 모드를 고려한 색상 배열
+  const fallbackColors = [
+    "#8884d8", // 보라색
+    "#82ca9d", // 초록색
+    "#ffc658", // 노란색
+    "#ff7300", // 주황색
+    "#00c49f", // 청록색
+    "#8884d8", // 보라색
+    "#82ca9d", // 초록색
+    "#ffc658", // 노란색
+  ];
+
+  // oklch 형식이면 fallback 사용, 아니면 실제 값 사용
+  return colors.map((color, index) => {
+    if (color.startsWith("oklch(")) {
+      return fallbackColors[index];
+    }
+    return color || fallbackColors[index];
+  });
+};
 
 /**
  * 차트 설정
@@ -79,6 +125,21 @@ const chartConfig = {
  */
 export default function TypeChart({ data }: TypeChartProps) {
   const router = useRouter();
+  const [chartColors, setChartColors] = useState<string[]>([
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#ff7300",
+    "#00c49f",
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+  ]);
+
+  // 클라이언트 사이드에서만 색상 가져오기
+  useEffect(() => {
+    setChartColors(getChartColors());
+  }, []);
 
   // 전체 개수 계산
   const total = data.reduce((sum, item) => sum + item.count, 0);
@@ -87,7 +148,7 @@ export default function TypeChart({ data }: TypeChartProps) {
   const chartData: TypeChartData[] = data.map((type, index) => ({
     ...type,
     percentage: total > 0 ? (type.count / total) * 100 : 0,
-    fill: CHART_COLORS[index % CHART_COLORS.length],
+    fill: chartColors[index % chartColors.length],
   }));
 
   // 섹션 클릭 핸들러
@@ -120,7 +181,6 @@ export default function TypeChart({ data }: TypeChartProps) {
             labelLine={false}
             outerRadius={120}
             innerRadius={60}
-            fill="#8884d8"
             dataKey="count"
             onClick={(data) => {
               if (data) {
@@ -132,7 +192,7 @@ export default function TypeChart({ data }: TypeChartProps) {
             {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={entry.fill || CHART_COLORS[index % CHART_COLORS.length]}
+                fill={entry.fill || chartColors[index % chartColors.length]}
               />
             ))}
           </Pie>
@@ -150,12 +210,12 @@ export default function TypeChart({ data }: TypeChartProps) {
                     {
                       name: "관광지 개수",
                       value: data.count,
-                      color: data.fill || CHART_COLORS[0],
+                      color: data.fill || chartColors[0],
                     },
                     {
                       name: "비율",
                       value: `${data.percentage.toFixed(1)}%`,
-                      color: data.fill || CHART_COLORS[0],
+                      color: data.fill || chartColors[0],
                     },
                   ]}
                   formatter={(value, name) => {

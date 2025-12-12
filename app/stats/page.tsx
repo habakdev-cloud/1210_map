@@ -15,21 +15,37 @@
  */
 
 import { Suspense } from "react";
+import dynamicImport from "next/dynamic";
 
 /**
  * Route Segment Config: 동적 렌더링
- * 
+ *
  * 통계 페이지는 빌드 시 렌더링하지 않고 런타임에만 렌더링합니다.
  * 빌드 시 많은 API 호출로 인한 Rate Limit을 방지하기 위해 동적 렌더링을 사용합니다.
  * 사용자가 페이지를 방문할 때만 API를 호출하여 데이터를 가져옵니다.
  */
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
-import StatsSummary, { StatsSummarySkeleton } from "@/components/stats/stats-summary";
-import RegionChartWrapper from "@/components/stats/region-chart-wrapper";
+import StatsSummary, {
+  StatsSummarySkeleton,
+} from "@/components/stats/stats-summary";
 import { RegionChartSkeleton } from "@/components/stats/region-chart";
-import TypeChartWrapper from "@/components/stats/type-chart-wrapper";
 import { TypeChartSkeleton } from "@/components/stats/type-chart";
+
+// 차트 컴포넌트를 동적 import로 로드 (recharts 라이브러리 크기 최적화)
+const RegionChartWrapper = dynamicImport(
+  () => import("@/components/stats/region-chart-wrapper"),
+  {
+    loading: () => <RegionChartSkeleton />,
+  },
+);
+
+const TypeChartWrapper = dynamicImport(
+  () => import("@/components/stats/type-chart-wrapper"),
+  {
+    loading: () => <TypeChartSkeleton />,
+  },
+);
 
 /**
  * 로딩 스켈레톤 컴포넌트
@@ -108,5 +124,3 @@ export default async function StatsPage() {
     </main>
   );
 }
-
-

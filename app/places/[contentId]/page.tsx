@@ -18,6 +18,7 @@
 
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import {
@@ -28,12 +29,20 @@ import {
 } from "@/lib/api/tour-api";
 import DetailInfo from "@/components/tour-detail/detail-info";
 import DetailIntro from "@/components/tour-detail/detail-intro";
-import DetailGallery from "@/components/tour-detail/detail-gallery";
 import DetailMap from "@/components/tour-detail/detail-map";
 import DetailPetTour from "@/components/tour-detail/detail-pet-tour";
 import DetailRecommendations from "@/components/tour-detail/detail-recommendations";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Error as ErrorComponent } from "@/components/ui/error";
+
+// 이미지 갤러리 컴포넌트를 동적 import로 로드 (swiper 라이브러리 크기 최적화)
+const DetailGallery = dynamic(() => import("@/components/tour-detail/detail-gallery"), {
+  loading: () => (
+    <div className="container max-w-7xl mx-auto px-4 py-8">
+      <Skeleton className="w-full h-[400px] md:h-[500px] rounded-xl" />
+    </div>
+  ),
+});
 
 interface PlaceDetailPageProps {
   params: Promise<{

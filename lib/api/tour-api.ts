@@ -86,15 +86,41 @@ function buildApiUrl(endpoint: string, params: Record<string, string | number | 
 }
 
 /**
- * API 호출 헬퍼 함수 (재시도 로직 포함)
+ * 캐싱 전략 매핑
+ * 데이터 특성에 맞는 캐싱 시간 설정
+ */
+const CACHE_STRATEGIES = {
+  areaCode: 604800,      // 7일 - 지역 코드는 거의 변경되지 않음
+  areaBasedList: 86400,  // 24시간 - 관광지 목록은 하루에 한 번 업데이트
+  detailCommon: 43200,   // 12시간 - 관광지 상세 정보는 중간 빈도 업데이트
+  detailIntro: 43200,    // 12시간 - 운영 정보는 상세 정보와 동일
+  detailImage: 86400,    // 24시간 - 이미지는 자주 변경되지 않음
+  detailPetTour: 86400,  // 24시간 - 반려동물 정보는 자주 변경되지 않음
+  searchKeyword: 3600,   // 1시간 - 검색 결과는 자주 변경될 수 있음
+  stats: 3600,           // 1시간 - 통계 데이터는 자주 업데이트
+} as const;
+
+type CacheStrategy = keyof typeof CACHE_STRATEGIES;
+
+/**
+ * API 호출 헬퍼 함수 (재시도 로직 및 캐싱 전략 포함)
+ * 
+ * @param url - API URL
+ * @param maxRetries - 최대 재시도 횟수 (기본값: 3)
+ * @param delay - 재시도 지연 시간 (기본값: 1000ms)
+ * @param cacheStrategy - 캐싱 전략 (기본값: 'areaBasedList')
  */
 async function fetchWithRetry<T>(
   url: string,
   maxRetries: number = 3,
-  delay: number = 1000
+  delay: number = 1000,
+  cacheStrategy: CacheStrategy = "areaBasedList"
 ): Promise<T> {
   let lastError: Error | null = null;
   let lastStatusCode: number | null = null;
+
+  // 캐싱 시간 가져오기
+  const revalidate = CACHE_STRATEGIES[cacheStrategy];
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -105,7 +131,7 @@ async function fetchWithRetry<T>(
         },
         // Next.js에서 캐싱 제어 (서버 사이드)
         ...(typeof window === "undefined" && {
-          next: { revalidate: 86400 }, // 24시간 캐싱 (통계 데이터 최적화)
+          next: { revalidate },
         }),
       });
 
@@ -226,7 +252,7 @@ function normalizeItems<T>(items: T | T[] | undefined): T[] {
 export async function getAreaCode(areaCode?: string): Promise<AreaCode[]> {
   try {
     const url = buildApiUrl("/areaCode2", areaCode ? { areaCode } : {});
-    const response = await fetchWithRetry<AreaCodeResponse>(url);
+    const response = await fetchWithRetry<AreaCodeResponse>(url, 3, 1000, "areaCode");
     return normalizeItems(response.response.body.items?.item);
   } catch (error) {
     console.error("지역코드 조회 실패:", error);
@@ -273,7 +299,7 @@ export async function getAreaBasedList(params: {
       pageNo,
     });
 
-    const response = await fetchWithRetry<AreaBasedListResponse>(url);
+    const response = await fetchWithRetry<AreaBasedListResponse>(url, 3, 1000, "areaBasedList");
     
     // 응답 구조 확인 및 안전하게 접근
     if (!response) {
@@ -343,7 +369,7 @@ export async function getAreaBasedListWithPagination(params: {
       pageNo,
     });
 
-    const response = await fetchWithRetry<AreaBasedListResponse>(url);
+    const response = await fetchWithRetry<AreaBasedListResponse>(url, 3, 1000, "areaBasedList");
     
     if (!response || !("response" in response) || !response.response?.body) {
       throw new Error("API 응답 구조가 올바르지 않습니다");
@@ -425,7 +451,7 @@ export async function searchKeyword(params: {
       pageNo,
     });
 
-    const response = await fetchWithRetry<SearchKeywordResponse>(url);
+    const response = await fetchWithRetry<SearchKeywordResponse>(url, 3, 1000, "searchKeyword");
     return normalizeItems(response.response.body.items?.item);
   } catch (error) {
     console.error("키워드 검색 실패:", error);
@@ -466,7 +492,7 @@ export async function searchKeywordWithPagination(params: {
       pageNo,
     });
 
-    const response = await fetchWithRetry<SearchKeywordResponse>(url);
+    const response = await fetchWithRetry<SearchKeywordResponse>(url, 3, 1000, "searchKeyword");
     
     if (!response || !("response" in response) || !response.response?.body) {
       throw new Error("API 응답 구조가 올바르지 않습니다");
@@ -562,7 +588,7 @@ export async function getDetailCommon(params: {
       contentId,
     });
 
-    const response = await fetchWithRetry<DetailCommonResponse>(url);
+    const response = await fetchWithRetry<DetailCommonResponse>(url, 3, 1000, "detailCommon");
     const items = normalizeItems(response.response.body.items?.item);
     return items.length > 0 ? items[0] : null;
   } catch (error) {
@@ -600,7 +626,7 @@ export async function getDetailIntro(params: {
       contentTypeId,
     });
 
-    const response = await fetchWithRetry<DetailIntroResponse>(url);
+    const response = await fetchWithRetry<DetailIntroResponse>(url, 3, 1000, "detailIntro");
     const items = normalizeItems(response.response.body.items?.item);
     return items.length > 0 ? items[0] : null;
   } catch (error) {
@@ -637,7 +663,7 @@ export async function getDetailImage(params: {
       contentId,
     });
 
-    const response = await fetchWithRetry<DetailImageResponse>(url);
+    const response = await fetchWithRetry<DetailImageResponse>(url, 3, 1000, "detailImage");
     return normalizeItems(response.response.body.items?.item);
   } catch (error) {
     console.error("이미지 목록 조회 실패:", error);
@@ -671,7 +697,7 @@ export async function getDetailPetTour(params: {
       contentId,
     });
 
-    const response = await fetchWithRetry<DetailPetTourResponse>(url);
+    const response = await fetchWithRetry<DetailPetTourResponse>(url, 3, 1000, "detailPetTour");
     const items = normalizeItems(response.response.body.items?.item);
     return items.length > 0 ? items[0] : null;
   } catch (error) {

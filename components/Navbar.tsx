@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Home, BarChart3, Bookmark, Menu, ArrowLeft } from "lucide-react";
 import { useState, useEffect, Suspense } from "react";
 import TourSearch from "@/components/tour-search";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -103,6 +104,7 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <SignedOut>
               <SignInButton mode="modal">
                 <Button size="sm">로그인</Button>
@@ -170,6 +172,11 @@ const Navbar = () => {
                 북마크
               </Link>
             </SignedIn>
+            {/* 모바일 테마 전환 */}
+            <div className="flex items-center justify-between px-3 py-2 border-t mt-2 pt-2">
+              <span className="text-sm font-medium text-muted-foreground">테마</span>
+              <ThemeToggle />
+            </div>
           </div>
         </nav>
       )}

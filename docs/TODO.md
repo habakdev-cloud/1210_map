@@ -722,38 +722,38 @@
   - [x] `app/not-found.tsx` 생성
     - [x] 사용자 친화적인 메시지
     - [x] 홈으로 돌아가기 버튼
-- [ ] SEO 최적화
-  - [ ] 메타태그 설정 (`app/layout.tsx`)
-    - [ ] 기본 title, description
-    - [ ] Open Graph 태그
-    - [ ] Twitter Card 태그
-  - [ ] `app/sitemap.ts` 생성
-    - [ ] 동적 sitemap 생성 (관광지 상세페이지 포함)
-  - [ ] `app/robots.ts` 생성
-- [ ] 성능 최적화
-  - [ ] Lighthouse 점수 측정 (목표: > 80)
-  - [ ] 코드 분할 확인
-  - [ ] 불필요한 번들 제거
-  - [ ] API 응답 캐싱 전략 확인
-- [ ] 환경변수 보안 검증
-  - [ ] 모든 필수 환경변수 확인
-  - [ ] `.env.example` 업데이트
-  - [ ] 프로덕션 환경변수 설정 가이드 작성
-- [ ] 배포 준비
-  - [ ] Vercel 배포 설정
-  - [ ] 환경변수 설정 (Vercel 대시보드)
-  - [ ] 빌드 테스트 (`pnpm build`)
-  - [ ] 프로덕션 배포 및 테스트
+- [x] SEO 최적화
+  - [x] 메타태그 설정 (`app/layout.tsx`)
+    - [x] 기본 title, description
+    - [x] Open Graph 태그
+    - [x] Twitter Card 태그
+  - [x] `app/sitemap.ts` 생성
+    - [x] 동적 sitemap 생성 (관광지 상세페이지 포함)
+  - [x] `app/robots.ts` 생성
+- [x] 성능 최적화
+  - [x] Lighthouse 점수 측정 (목표: > 80)
+  - [x] 코드 분할 확인
+  - [x] 불필요한 번들 제거
+  - [x] API 응답 캐싱 전략 확인
+- [x] 환경변수 보안 검증
+  - [x] 모든 필수 환경변수 확인
+  - [x] `.env.example` 업데이트
+  - [x] 프로덕션 환경변수 설정 가이드 작성
+- [x] 배포 준비
+  - [x] Vercel 배포 설정
+  - [x] 환경변수 설정 (Vercel 대시보드)
+  - [x] 빌드 테스트 (`pnpm build`)
+  - [x] 프로덕션 배포 및 테스트
 
 ## 추가 작업 (선택 사항)
 
-- [ ] 다크 모드 지원
-  - [ ] 테마 전환 기능
-  - [ ] 모든 컴포넌트 다크 모드 스타일 적용
-- [ ] PWA 지원
-  - [ ] `app/manifest.ts` 생성
-  - [ ] Service Worker 설정
-  - [ ] 오프라인 지원
+- [x] 다크 모드 지원
+  - [x] 테마 전환 기능
+  - [x] 모든 컴포넌트 다크 모드 스타일 적용
+- [x] PWA 지원
+  - [x] `app/manifest.ts` 생성
+  - [x] Service Worker 설정
+  - [x] 오프라인 지원
 - [ ] 접근성 개선
   - [ ] ARIA 라벨 추가
   - [ ] 키보드 네비게이션 개선
